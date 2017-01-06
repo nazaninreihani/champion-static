@@ -19960,13 +19960,19 @@
 	var ChampionEndpoint = function () {
 	    'use strict';
 	
-	    var $container = $('#champion-container');
-	    var $txt_server_url = $container.find('#txt_server_url');
-	    var $txt_app_id = $container.find('#txt_app_id');
-	    var $btn_set_endpoint = $container.find('#btn_set_endpoint');
-	    var $btn_reset_endpoint = $container.find('#btn_reset_endpoint');
+	    var $container = void 0,
+	        $txt_server_url = void 0,
+	        $txt_app_id = void 0,
+	        $btn_set_endpoint = void 0,
+	        $btn_reset_endpoint = void 0;
 	
 	    var load = function load() {
+	        $container = $('#champion-container');
+	        $txt_server_url = $container.find('#txt_server_url');
+	        $txt_app_id = $container.find('#txt_app_id');
+	        $btn_set_endpoint = $container.find('#btn_set_endpoint');
+	        $btn_reset_endpoint = $container.find('#btn_reset_endpoint');
+	
 	        $txt_server_url.val(getServer());
 	        $txt_app_id.val(getAppId());
 	
