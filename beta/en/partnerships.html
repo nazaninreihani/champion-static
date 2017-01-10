@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/beta/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/beta/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/beta/css/flex.min.css?ysn85bt4" />
-     <link rel="stylesheet" href="/beta/css/style.min.css?ysn85bt4" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?ysn85bt4" />
-      <script src="/beta/js/bundle.min.js?ysn85bt4" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?ysn85bt4" type="text/javascript"></script>
+     <link rel="stylesheet" href="/beta/css/flex.min.css?us5tyc5w" />
+     <link rel="stylesheet" href="/beta/css/style.min.css?us5tyc5w" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?us5tyc5w" />
+      <script src="/beta/js/bundle.min.js?us5tyc5w" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?us5tyc5w" type="text/javascript"></script>
      
 </head>
 <body>
@@ -134,7 +134,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm flex-sm-middle">
-                    <form id="verify-email-form">
+                    <form id="verify-email-form" class="frm-verify-email">
     <div class="signup-box border primary-bg-color fx-material">
         <div class="">
             <input class="clean-input" autocomplete="off" name="email" id="email" maxlength="50" placeholder="Enter your email">
@@ -142,7 +142,7 @@
         <div class="">
             <button class="button-secondary" id="btn-verify-email" type="submit">Create Free Account</button>
         </div>
-        <span class="error-msg hint color-white center-text" id="signup_error" style="display:none"></span>
+        <span class="error-msg hint color-white center-text hidden" id="signup_error"></span>
     </div>
 </form>
                 </div>
@@ -163,28 +163,28 @@
                                 <li id="first-tab" class="tm-li active first">
                                     <span class="menu-wrap-a">
                                         <span class="menu-wrap-b">
-                                            <a class="tm-a first a-active">Overview</a>
+                                            <a class="tm-a first a-active" href="#first-tab">Overview</a>
                                         </span>
                                     </span>
                                 </li>
                                 <li id="second-tab" class="tm-li">
                                     <span class="menu-wrap-a">
                                         <span class="menu-wrap-b">
-                                            <a class="tm-a">Introducing Broker (IB)</a>
+                                            <a class="tm-a" href="#second-tab">Introducing Broker (IB)</a>
                                         </span>
                                     </span>
                                 </li>
                                 <li id="third-tab" class="tm-li">
                                     <span class="menu-wrap-a">
                                         <span class="menu-wrap-b">
-                                            <a class="tm-a">Affiliate programme</a>
+                                            <a class="tm-a" href="#third-tab">Affiliate programme</a>
                                         </span>
                                     </span>
                                 </li>
                                 <li id="fourth-tab" class="tm-li">
                                     <span class="menu-wrap-a">
                                         <span class="menu-wrap-b">
-                                            <a class="tm-a">Content Contributor programme</a>
+                                            <a class="tm-a" href="#fourth-tab">Content Contributor programme</a>
                                         </span>
                                     </span>
                                 </li>
@@ -203,8 +203,11 @@
                                     <h2>Forex, CFDs, metals, futures</h2>
                                     <h4>Introducing Broker (IB)</h4>
                                     <p>Earn a commission on all ongoing trades done by your referred clients.</p>
-                                        <p class="lg-padding"><a class="button"
-                                                                 href=""><span>Apply now</span></a></p>
+                                        <p class="lg-padding">
+                                            <a class="button" href="#second-tab">
+                                                <span>Apply now</span>
+                                            </a>
+                                        </p>
                                         <div class="row">
                                             <div class="col-sm">
                                                 <h2>Binary Options</h2>
@@ -212,14 +215,20 @@
                                                     <div class="col-sm">
                                                         <h4>Affiliate Programme</h4>
                                                         <p>Earn up to 35% commission on all binary options trades performed by your referred clients.</p>
-                                                        <p><a class="button bottom"
-                                                              href=""><span>Apply now</span></a></p>
+                                                        <p>
+                                                            <a class="button bottom" href="#third-tab">
+                                                                <span>Apply now</span>
+                                                            </a>
+                                                        </p>
                                                     </div>
                                                     <div class="col-sm">
                                                         <h4>Content Contributors</h4>
                                                         <p>Create premium content to help clients trade. Earn a commission by converting viewers into regular clients.</p>
-                                                        <p><a class="button bottom"
-                                                              href=""><span>Apply now</span></a></p>
+                                                        <p>
+                                                            <a class="button bottom" href="#fourth-tab">
+                                                                <span>Apply now</span>
+                                                            </a>
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div class="fx-divider"></div>
@@ -277,7 +286,11 @@
                                     <div class="fx-divider"></div>
                                     <div class="row">
                                         <div class="col-md">
-                                            <p><a class="button" href=""><span>Apply now</span></a></p>
+                                            <p>
+                                                <a class="button" href="mailto:ibsupport@champion-fx.com" rel="nofollow">
+                                                    <span>Apply now</span>
+                                                </a>
+                                            </p>
                                             <div class="fx-divider"></div>
                                             <p class="font-s">Note: Your IB commission is only generated through Champion FX clients who trade Forex, CFDs, metals, and futures using our MetaTrader 5 platform.</p>
                                         </div>
@@ -343,7 +356,11 @@
                                     <h2>Getting started</h2>
                                     <p>Being an affiliate is easy. Just tell your friends and followers about Champion FX. You can share your unique referral link on your website, or send it to your mailing list. If your friends and followers click the link and sign up as a Champion FX client, you’ll earn up to 35% of the net revenue for all trades they purchase.</p>
                                     <div class="fx-divider"></div>
-                                    <p><a class="button" href=""><span>Apply now</span></a></p>
+                                    <p>
+                                        <a class="button" href="mailto:affiliates@champion-fx.com" rel="nofollow">
+                                            <span>Apply now</span>
+                                        </a>
+                                    </p>
                                     <div class="fx-divider"></div>
                                     <p class="font-s">Note: Your affiliate commission is only generated through Champion FX clients who trade binary options using our Webtrader platform.</p>
                                 </div>
@@ -380,7 +397,11 @@
                                     <div class="row">
                                         <div class="col-md">
                                             <div class="fx-divider"></div>
-                                            <p><a class="button" href=""><span>Apply now</span></a></p>
+                                            <p>
+                                                <a class="button" href="mailto:marketing@champion-fx.com" rel="nofollow">
+                                                    <span>Apply now</span>
+                                                </a>
+                                            </p>
                                             <div class="fx-divider"></div>
                                             <p class="font-s">Note: Your affiliate commission is only generated through Champion FX clients who trade binary options using our Webtrader platform.</p>
                                         </div>
@@ -403,7 +424,9 @@
             <div class="row">
                 <div class="col-sm">
                 <ul>
-                    <li><a class="" href=""></a></li>
+                    <li>
+                        <a href="/beta/en/terms-and-conditions.html">Terms and Conditions</a>
+                    </li>
                 </ul>
                 </div>
                 <div class="col-sm">

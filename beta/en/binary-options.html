@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/beta/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/beta/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/beta/css/flex.min.css?ysn85bt4" />
-     <link rel="stylesheet" href="/beta/css/style.min.css?ysn85bt4" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?ysn85bt4" />
-      <script src="/beta/js/bundle.min.js?ysn85bt4" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?ysn85bt4" type="text/javascript"></script>
+     <link rel="stylesheet" href="/beta/css/flex.min.css?us5tyc5w" />
+     <link rel="stylesheet" href="/beta/css/style.min.css?us5tyc5w" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?us5tyc5w" />
+      <script src="/beta/js/bundle.min.js?us5tyc5w" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?us5tyc5w" type="text/javascript"></script>
      
 </head>
 <body>
@@ -134,7 +134,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm flex-sm-middle">
-                    <form id="verify-email-form">
+                    <form id="verify-email-form" class="frm-verify-email">
     <div class="signup-box border primary-bg-color fx-material">
         <div class="">
             <input class="clean-input" autocomplete="off" name="email" id="email" maxlength="50" placeholder="Enter your email">
@@ -142,7 +142,7 @@
         <div class="">
             <button class="button-secondary" id="btn-verify-email" type="submit">Create Free Account</button>
         </div>
-        <span class="error-msg hint color-white center-text" id="signup_error" style="display:none"></span>
+        <span class="error-msg hint color-white center-text hidden" id="signup_error"></span>
     </div>
 </form>
                 </div>
@@ -260,12 +260,20 @@
                                         <div class="col-md">
                                             <h4>Virtual account</h4>
                                             <p>Trade with USD 10,000 worth of virtual currency without any risks.</p>
-                                            <p><a class="button" href=""><span>Sign up</span></a></p>
+                                            <p>
+                                                <a class="button" id="virtual-signup-button">
+                                                    <span>Sign up</span>
+                                                </a>
+                                            </p>
                                         </div>
                                         <div class="col-md">
                                             <h4>Real account</h4>
                                             <p>Upgrade to a real account to trade binary options with real money.</p>
-                                            <p><a class="button" href=""><span>Upgrade</span></a></p>
+                                            <p>
+                                                <a class="button" id="real-signup-button" href="/beta/en/new-account/real.html">
+                                                    <span>Upgrade</span>
+                                                </a>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -326,29 +334,23 @@
                                 <p>Trading binary options is relatively easy, and you can purchase a trade in only three simple steps.</p>
                                 <div class="row centered">
                                     <div class="col-md">
-                                        <div class="fx-lg">
-                                            <img src="/beta/images/binary-options-1.png" />
-                                        </div>
+                                        <div class="fx-step-one fx-lg"></div>
                                         <p><strong>Define your position</strong></p>
                                         <p>Consider the market, duration, barrier, and payout.</p>
                                     </div>
                                     <div class="col-md">
-                                        <div class="fx-lg">
-                                            <img src="/beta/images/binary-options-2.png" />
-                                        </div>
+                                        <div class="fx-step-two fx-lg"></div>
                                         <p><strong>Get your price</strong></p>
                                         <p>Receive instant prices based on your position.</p>
                                     </div>
                                     <div class="col-md">
-                                        <div class="fx-lg">
-                                            <img src="/beta/images/binary-options-3.png" />
-                                        </div>
+                                        <div class="fx-step-three fx-lg"></div>
                                         <p><strong>Make your trade</strong></p>
                                         <p>Choose to buy, or redefine your position.</p>
                                     </div>
                                 </div>
                                 <h4>Step 1: Define your position</h4>
-                                <div><img src="/beta/images/binary-options-4.png" /></div>
+                                <div class="fx-define-position fx-xlg"></div>
                                 <p>First, you need to set the parameters of your trade. Here's what you need to consider.</p>
                                 <ul class="bullet">
                                     <li>
@@ -447,7 +449,9 @@
             <div class="row">
                 <div class="col-sm">
                 <ul>
-                    <li><a class="" href=""></a></li>
+                    <li>
+                        <a href="/beta/en/terms-and-conditions.html">Terms and Conditions</a>
+                    </li>
                 </ul>
                 </div>
                 <div class="col-sm">
