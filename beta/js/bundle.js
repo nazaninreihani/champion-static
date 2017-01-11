@@ -18482,8 +18482,8 @@
 	        _container.on('champion:before', beforeContentChange);
 	        _container.on('champion:after', afterContentChange);
 	        Client.init();
-	        ChampionRouter.init(_container, '#champion-content');
 	        ChampionSocket.init();
+	        ChampionRouter.init(_container, '#champion-content');
 	        if (!Client.is_logged_in()) {
 	            $('#main-login').find('a').on('click', function () {
 	                Login.redirect_to_login();
@@ -18610,7 +18610,7 @@
 	    };
 	
 	    var getAppId = function getAppId() {
-	        return localStorage.getItem('config.app_id') ? localStorage.getItem('config.app_id') : '1';
+	        return localStorage.getItem('config.app_id') ? localStorage.getItem('config.app_id') : '2472';
 	    };
 	
 	    var getServer = function getServer() {
@@ -20022,8 +20022,11 @@
 	                if (field.msg_element) {
 	                    field.$error = $form.find(field.msg_element);
 	                } else {
-	                    field.$.parent().append($('<div/>', { class: error_class + ' ' + hidden_class }));
-	                    field.$error = field.$.parent().find('.' + error_class);
+	                    var $parent = field.$.parent();
+	                    if ($parent.find('div.' + error_class).length === 0) {
+	                        $parent.append($('<div/>', { class: error_class + ' ' + hidden_class }));
+	                    }
+	                    field.$error = $parent.find('.' + error_class);
 	                }
 	
 	                var event = events_map[field.$.get(0).localName];
