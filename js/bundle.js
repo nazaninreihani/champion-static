@@ -18945,7 +18945,7 @@
 	    var init = function init() {
 	        var loginid = Cookies.get('loginid');
 	        client_object.loginid_array = parseLoginIDList(Cookies.get('loginid_list') || '');
-	        var is_logged_in = !!(loginid && client_object.loginid_array.length > 0 && get_storage_value('tokens'));
+	        var is_logged_in = !!(loginid && client_object.loginid_array.length > 0 && get_storage_value('tokens') && Cookies.get('token'));
 	
 	        set_storage_value('email', Cookies.get('email'));
 	        set_storage_value('loginid', loginid);
@@ -18987,6 +18987,10 @@
 	        set_storage_value('landing_company_fullname', authorize.landing_company_fullname);
 	        set_storage_value('currency', authorize.currency);
 	        client_object.values_set = true;
+	
+	        if (authorize.is_virtual && !get_boolean('has_real')) {
+	            $('.upgrade-message').removeClass('hidden');
+	        }
 	    };
 	
 	    var clear_storage_values = function clear_storage_values() {
@@ -19042,8 +19046,7 @@
 	        set_cookie('loginid', client_loginid);
 	        set_cookie('loginid_list', virtual_client ? client_loginid + ':V:E' : client_loginid + ':R:E+' + Cookies.get('loginid_list'));
 	        // set local storage
-	        localStorage.setItem('GTM_newaccount', '1');
-	        localStorage.setItem('active_loginid', client_loginid);
+	        set_storage_value('loginid', client_loginid);
 	        window.location.href = default_redirect_url();
 	    };
 	
@@ -19184,7 +19187,7 @@
 	    this.initialized = false;
 	    this.cookie_name = cookie_name;
 	    var hostname = window.location.hostname;
-	    this.domain = cookie_domain || (/\.binary\.com/i.test(hostname) ? '.' + hostname.split('.').slice(-2).join('.') : hostname);
+	    this.domain = cookie_domain || (/\.champion-fx\.com/i.test(hostname) ? '.' + hostname.split('.').slice(-2).join('.') : hostname);
 	    this.path = '/';
 	    this.expires = new Date('Thu, 1 Jan 2037 12:00:00 GMT');
 	    this.value = {};
@@ -19254,6 +19257,29 @@
 	    }
 	}
 	
+	// LocalStorage can be used as a means of communication among
+	// different windows. The problem that is solved here is what
+	// happens if the user logs out or switches loginid in one
+	// window while keeping another window or tab open. This can
+	// lead to unintended trades. The solution is to reload the
+	// page in all windows after switching loginid or after logout.
+	$(document).ready(function () {
+	    // Cookies is not always available.
+	    // So, fall back to a more basic solution.
+	    var match = document.cookie.match(/\bloginid=(\w+)/);
+	    match = match ? match[1] : '';
+	    $(window).on('storage', function (jq_event) {
+	        switch (jq_event.originalEvent.key) {
+	            case 'client.loginid':
+	                if (jq_event.originalEvent.newValue !== match && (jq_event.originalEvent.newValue === '' || !/logged_inws/i.test(window.location.pathname))) {
+	                    window.location.reload();
+	                }
+	                break;
+	            // no default
+	        }
+	    });
+	});
+	
 	module.exports = {
 	    CookieStorage: CookieStorage,
 	    State: State,
@@ -19295,12 +19321,12 @@
 	        staticHost = window.staticHost;
 	    }
 	    if (!staticHost || staticHost.length === 0) {
-	        staticHost = $('script[src*="binary.min.js"],script[src*="binary.js"]').attr('src');
+	        staticHost = $('script[src*="bundle.min.js"],script[src*="bundle.js"]').attr('src');
 	
 	        if (staticHost && staticHost.length > 0) {
 	            staticHost = staticHost.substr(0, staticHost.indexOf('/js/') + 1);
 	        } else {
-	            staticHost = 'https://www.binary.com/';
+	            staticHost = 'https://www.champion-fx.com/';
 	        }
 	
 	        if (typeof window !== 'undefined') {
@@ -19389,7 +19415,8 @@
 	        // cleaning the previous values
 	        Client.clear_storage_values();
 	        sessionStorage.removeItem('client_status');
-	        // set cookies: loginid, login
+	        // set cookies: loginid, token
+	        Client.set_value('loginid', loginid);
 	        Client.set_cookie('loginid', loginid);
 	        Client.set_cookie('token', token);
 	        $('.login-id-list a').removeAttr('disabled');
@@ -20080,12 +20107,7 @@
 	    };
 	
 	    var getFieldType = function getFieldType($field) {
-	        if (!$field.length) return null;
-	        var type = $field.get(0).localName;
-	        if (type === 'input' && $field.attr('type') === 'checkbox') {
-	            type = 'checkbox';
-	        }
-	        return type;
+	        return $field.length ? $field.attr('type') === 'checkbox' ? 'checkbox' : $field.get(0).localName : null;
 	    };
 	
 	    var getFieldValue = function getFieldValue($field) {
