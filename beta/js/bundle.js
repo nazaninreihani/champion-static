@@ -18464,9 +18464,11 @@
 	var ChampionContact = __webpack_require__(299);
 	var ChampionEndpoint = __webpack_require__(428);
 	var ChangePassword = __webpack_require__(429);
-	var BinaryOptions = __webpack_require__(431);
+	var LostPassword = __webpack_require__(431);
+	var ResetPassword = __webpack_require__(432);
+	var BinaryOptions = __webpack_require__(433);
 	var Client = __webpack_require__(304);
-	var LoggedIn = __webpack_require__(432);
+	var LoggedIn = __webpack_require__(434);
 	var Login = __webpack_require__(430);
 	var Utility = __webpack_require__(308);
 	
@@ -18510,7 +18512,9 @@
 	            endpoint: ChampionEndpoint,
 	            logged_inws: LoggedIn,
 	            'binary-options': BinaryOptions,
-	            change_password: ChangePassword
+	            change_password: ChangePassword,
+	            lost_password: LostPassword,
+	            reset_password: ResetPassword
 	        };
 	        if (page in pages_map) {
 	            _active_script = pages_map[page];
@@ -20179,6 +20183,10 @@
 	        return (options.min ? value.trim().length >= options.min : true) && (options.max ? value.trim().length <= options.max : true);
 	    };
 	
+	    var validEmailToken = function validEmailToken(value) {
+	        return value.trim().length === 48;
+	    };
+	
 	    var validators_map = {
 	        req: { func: validRequired, message: 'This field is required' },
 	        email: { func: validEmail, message: 'Invalid email address' },
@@ -20186,6 +20194,7 @@
 	        general: { func: validGeneral, message: 'Only letters, space, hyphen, period, apost are allowed.' },
 	        postcode: { func: validPostCode, message: 'Only letters, numbers, hyphen are allowed.' },
 	        phone: { func: validPhone, message: 'Only numbers, space are allowed.' },
+	        email_token: { func: validEmailToken, message: 'Please submit a valid verification token.' },
 	        compare: { func: validCompare, message: 'The two passwords that you entered do not match.' },
 	        min: { func: validMin, message: 'Minimum of [_1] characters required.' },
 	        length: { func: validLength, message: 'You should enter [_1] characters.' }
@@ -20197,6 +20206,7 @@
 	    // ----- Validate -----
 	    // --------------------
 	    var checkField = function checkField(field) {
+	        if (!field.$.is(':Visible')) return true;
 	        var all_is_ok = true,
 	            message = void 0;
 	
@@ -20307,7 +20317,7 @@
 	
 	        submit_btn.on('click', submit);
 	
-	        Validation.init(form_selector, [{ selector: '#verification-code', validations: ['req', ['length', { min: 48, max: 48, message: 'Please submit a valid verification token.' }]] }, { selector: '#password', validations: ['req', 'password'] }, { selector: '#r-password', validations: ['req', ['compare', { to: '#password' }]] }, { selector: '#residence', validations: ['req'] }]);
+	        Validation.init(form_selector, [{ selector: '#verification-code', validations: ['req', 'email_token'] }, { selector: '#password', validations: ['req', 'password'] }, { selector: '#r-password', validations: ['req', ['compare', { to: '#password' }]] }, { selector: '#residence', validations: ['req'] }]);
 	
 	        populateResidence();
 	    };
@@ -35751,6 +35761,170 @@
 
 	'use strict';
 	
+	var Client = __webpack_require__(304);
+	var Validation = __webpack_require__(313);
+	var ChampionSocket = __webpack_require__(301);
+	var url_for = __webpack_require__(306).url_for;
+	
+	var LostPassword = function () {
+	    'use strict';
+	
+	    var form_selector = '#frm_lost_password';
+	    var submit_btn = void 0;
+	
+	    var load = function load() {
+	        if (Client.redirect_if_login()) return;
+	        submit_btn = $('#lost_passwordws').find('#btn-submit');
+	
+	        submit_btn.on('click', submit);
+	
+	        Validation.init(form_selector, [{ selector: '#lp_email', validations: ['req', 'email'] }]);
+	    };
+	
+	    var unload = function unload() {
+	        submit_btn.off('click', submit);
+	    };
+	
+	    var submit = function submit(e) {
+	        e.preventDefault();
+	        if (Validation.validate(form_selector)) {
+	            var data = {
+	                verify_email: $('#lp_email').val(),
+	                type: 'reset_password'
+	            };
+	            ChampionSocket.send(data, function (response) {
+	                if (response.error) {
+	                    $('#error-lost-password').removeClass('invisible').text(response.error.message);
+	                } else {
+	                    window.location.href = url_for('reset_password');
+	                }
+	            });
+	        }
+	    };
+	
+	    return {
+	        load: load,
+	        unload: unload
+	    };
+	}();
+	
+	module.exports = LostPassword;
+
+/***/ },
+/* 432 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Client = __webpack_require__(304);
+	var Validation = __webpack_require__(313);
+	var ChampionSocket = __webpack_require__(301);
+	var Login = __webpack_require__(430);
+	var DatePicker = __webpack_require__(427).DatePicker;
+	var Utility = __webpack_require__(308);
+	var moment = __webpack_require__(316);
+	
+	var ResetPassword = function () {
+	    'use strict';
+	
+	    var form_selector = '#frm_reset_password',
+	        hiddenClass = 'invisible';
+	
+	    var container = void 0,
+	        submit_btn = void 0,
+	        real_acc = void 0,
+	        dob_field = void 0;
+	
+	    var fields = {
+	        email_token: '#verification-code',
+	        password: '#password',
+	        dob: '#dob'
+	    };
+	
+	    var load = function load() {
+	        if (Client.redirect_if_login()) return;
+	        container = $(form_selector);
+	        submit_btn = container.find('#btn-submit');
+	        real_acc = container.find('#have-real-account');
+	        dob_field = container.find('#dob-field');
+	
+	        real_acc.on('click', haveRealAccountHandler);
+	        submit_btn.on('click', submit);
+	        attachDatePicker();
+	
+	        Validation.init(form_selector, [{ selector: fields.email_token, validations: ['req', 'email_token'] }, { selector: fields.password, validations: ['req', 'password'] }, { selector: '#r-password', validations: ['req', ['compare', { to: fields.password }]] }, { selector: fields.dob, validations: ['req'] }]);
+	    };
+	
+	    var haveRealAccountHandler = function haveRealAccountHandler() {
+	        dob_field.toggleClass(hiddenClass);
+	    };
+	
+	    var submit = function submit(e) {
+	        e.preventDefault();
+	        if (Validation.validate(form_selector)) {
+	            var data = {
+	                reset_password: 1,
+	                verification_code: $(fields.email_token).val(),
+	                new_password: $(fields.password).val()
+	            };
+	            if (real_acc.is(':checked')) {
+	                data.date_of_birth = $(fields.dob).val();
+	            }
+	            ChampionSocket.send(data, function (response) {
+	                submit_btn.prop('disabled', true);
+	                $(form_selector).addClass(hiddenClass);
+	                if (response.error) {
+	                    $('p.notice-msg').addClass(hiddenClass);
+	                    $('#reset-error').removeClass(hiddenClass);
+	
+	                    var resetErrorTemplate = '[_1]' + ' Please click the link below to restart the password recovery process. ' + 'If you require further assistance, please contact our Customer Support.';
+	
+	                    // special handling as backend returns inconsistent format
+	                    var errMsg = resetErrorTemplate.replace('[_1]', response.error.code === 'InputValidationFailed' ? 'Token has expired.' : response.error.message);
+	
+	                    $('#reset-error-msg').text(errMsg);
+	                } else {
+	                    $('p.notice-msg').text('Your password has been successfully reset. ' + 'Please log into your account using your new password.');
+	                    window.setTimeout(function () {
+	                        Login.redirect_to_login();
+	                    }, 5000);
+	                }
+	            });
+	        }
+	    };
+	
+	    var attachDatePicker = function attachDatePicker() {
+	        var datePickerInst = new DatePicker(fields.dob);
+	        datePickerInst.hide();
+	        datePickerInst.show({
+	            minDate: -100 * 365,
+	            maxDate: -18 * 365,
+	            yearRange: '-100:-18'
+	        });
+	        $(fields.dob).attr('data-value', Utility.toISOFormat(moment())).change(function () {
+	            return Utility.dateValueChanged(this, 'date');
+	        });
+	    };
+	
+	    var unload = function unload() {
+	        real_acc.off('click', haveRealAccountHandler);
+	        submit_btn.off('click', submit);
+	    };
+	
+	    return {
+	        load: load,
+	        unload: unload
+	    };
+	}();
+	
+	module.exports = ResetPassword;
+
+/***/ },
+/* 433 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	__webpack_require__(309);
 	var Client = __webpack_require__(304);
 	
@@ -35783,7 +35957,7 @@
 	module.exports = BinaryOptions;
 
 /***/ },
-/* 432 */
+/* 434 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
