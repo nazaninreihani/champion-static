@@ -18477,12 +18477,10 @@
 	    'use strict';
 	
 	    var _container = void 0,
-	        _signup = void 0,
 	        _active_script = null;
 	
 	    var init = function init() {
 	        _container = $('#champion-container');
-	        _signup = $('#signup');
 	        _container.on('champion:before', beforeContentChange);
 	        _container.on('champion:after', afterContentChange);
 	        Client.init();
@@ -18523,13 +18521,8 @@
 	            _active_script.load();
 	        }
 	
-	        var form = _container.find('#verify-email-form');
-	        if (Client.is_logged_in() || /new-account/.test(window.location.pathname)) {
-	            form.hide();
-	        } else {
-	            if (!_active_script) _active_script = ChampionSignup;
-	            ChampionSignup.load(form.length ? form : _signup);
-	        }
+	        if (!_active_script) _active_script = ChampionSignup;
+	        ChampionSignup.load();
 	        Utility.handleActive();
 	    };
 	
@@ -20128,17 +20121,41 @@
 	var ChampionRouter = __webpack_require__(311);
 	var url_for = __webpack_require__(306).url_for;
 	var Validation = __webpack_require__(313);
+	var Client = __webpack_require__(304);
 	
 	var ChampionSignup = function () {
 	    'use strict';
 	
-	    var form_selector = '.frm-verify-email';
+	    var form_selector = '.frm-verify-email',
+	        signup_selector = '#signup';
 	    var is_active = false,
 	        $form = void 0,
 	        $input = void 0,
 	        $button = void 0;
 	
 	    var load = function load() {
+	        if (Client.is_logged_in() || /(new-account|terms-and-conditions)/.test(window.location.pathname)) {
+	            changeVisibility($(form_selector), 'hide');
+	        } else {
+	            changeVisibility($(form_selector), 'show');
+	            if ($(form_selector).length === 1) {
+	                changeVisibility($(signup_selector), 'show');
+	            } else {
+	                changeVisibility($(signup_selector), 'hide');
+	            }
+	            eventHandler();
+	        }
+	    };
+	
+	    var changeVisibility = function changeVisibility($selector, action) {
+	        if (action === 'hide') {
+	            $selector.addClass('hidden');
+	        } else {
+	            $selector.removeClass('hidden');
+	        }
+	    };
+	
+	    var eventHandler = function eventHandler() {
 	        $form = $(form_selector + ':visible');
 	        $input = $form.find('input');
 	        $button = $form.find('button');
@@ -20149,7 +20166,6 @@
 	
 	    var unload = function unload() {
 	        if (is_active) {
-	            $form.addClass('hidden');
 	            $button.off('click', submit);
 	            $input.val('');
 	        }
