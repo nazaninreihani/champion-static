@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
 
-    <title>Change Password | Champion-FX.com</title>
+    <title>Terms and Conditions Approval | Champion-FX.com</title>
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/CFX_favicon32.png" />
@@ -154,71 +154,28 @@
     </div>
     <main class="page-content" aria-label="Content" id="champion-container">
         <div class="wrapper" id="champion-content">
-            <div class="fx-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm">
-                <h1>Change Password</h1>
-            </div>
+            <div class="container">
+    <div id="tnc-loading"></div>
+
+    <div class="row fx-section invisible" id="tnc_approval">
+        <div class="col-xs-2">
+            <p><img class="responsive" id="tnc_image" src="" /></p>
         </div>
-
-        <form id="frm_change_password">
-            <fieldset>
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_old_password">Current password</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_old_password" type="password" maxlength="25" />
-                        </div>
-                    </div>
+        <div class="col-xs-10">
+            <form>
+                <p id="tnc-message" class="invisible">
+                    [_1] has updated its  <a class="pjaxload" href="[_2]">Terms & Conditions</a>. By clicking OK, you confirm that you have read and accepted the updated <a class="pjaxload" href="[_2]">Terms & Conditions</a>.
+                </p>
+                <div class="centered">
+                    <span class="button">
+                        <button class="button" id="btn-accept"></button>
+                    </span>
                 </div>
-
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_new_password">New password</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_new_password" type="password" maxlength="25" />
-                        </div>
-                        <div class="hint">Minimum of six lower and uppercase letters with numbers</div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_re_password">Verify new password</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_re_password" type="password" maxlength="25" />
-                        </div>
-                    </div>
-                </div>
-
-            </fieldset>
-            <div class="submit-holder">
-                <p class="error-msg hidden" id="error-change-password"></p>
-                <button id="btn_submit" type="submit">Change Password</button>
-            </div>
-        </form>
-
-        <div class="errorbox rbox centered" id="client_message" style="display:none">
-            <div class="rbox-wrap">
-                <div class="gr-12 rbox-content" id="client_message_content">
-                    <p class="center notice-msg"></p>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
+
+    <p class="invisible error-msg center-text" id="err_message"></p>
 </div>
         </div>
     </main>
