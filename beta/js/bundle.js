@@ -18463,19 +18463,21 @@
 	var ChampionNewReal = __webpack_require__(315);
 	var ChampionContact = __webpack_require__(299);
 	var ChampionEndpoint = __webpack_require__(428);
-	var ChangePassword = __webpack_require__(429);
-	var TNCApproval = __webpack_require__(431);
-	var LostPassword = __webpack_require__(432);
-	var ResetPassword = __webpack_require__(433);
-	var BinaryOptions = __webpack_require__(434);
+	var ChampionSettings = __webpack_require__(429);
+	var ChangePassword = __webpack_require__(431);
+	var TNCApproval = __webpack_require__(432);
+	var LostPassword = __webpack_require__(433);
+	var ResetPassword = __webpack_require__(434);
+	var BinaryOptions = __webpack_require__(435);
 	var Client = __webpack_require__(304);
-	var LoggedIn = __webpack_require__(435);
+	var LoggedIn = __webpack_require__(436);
 	var Login = __webpack_require__(430);
 	var Utility = __webpack_require__(308);
-	var Cashier = __webpack_require__(436);
-	var CashierTopUpVirtual = __webpack_require__(437);
-	var CashierPaymentMethods = __webpack_require__(438);
-	var CashierPassword = __webpack_require__(439);
+	var Cashier = __webpack_require__(437);
+	var CashierTopUpVirtual = __webpack_require__(438);
+	var CashierPaymentMethods = __webpack_require__(439);
+	var CashierPassword = __webpack_require__(440);
+	var FinancialAssessment = __webpack_require__(441);
 	
 	var Champion = function () {
 	    'use strict';
@@ -18513,6 +18515,7 @@
 	            real: ChampionNewReal,
 	            contact: ChampionContact,
 	            endpoint: ChampionEndpoint,
+	            settings: ChampionSettings,
 	            logged_inws: LoggedIn,
 	            'binary-options': BinaryOptions,
 	            'change-password': ChangePassword,
@@ -18522,7 +18525,8 @@
 	            'payment-methods': CashierPaymentMethods,
 	            'top-up-virtual': CashierTopUpVirtual,
 	            'cashier-password': CashierPassword,
-	            'tnc-approval': TNCApproval
+	            'tnc-approval': TNCApproval,
+	            assessment: FinancialAssessment
 	        };
 	        if (page in pages_map) {
 	            _active_script = pages_map[page];
@@ -20319,7 +20323,7 @@
 	    // ----- Validate -----
 	    // --------------------
 	    var checkField = function checkField(field) {
-	        if (!field.$.is(':Visible')) return true;
+	        if (!field.$.is(':visible')) return true;
 	        var all_is_ok = true,
 	            message = void 0;
 	
@@ -35783,6 +35787,84 @@
 
 	'use strict';
 	
+	var Client = __webpack_require__(304);
+	var Login = __webpack_require__(430);
+	
+	var ChampionSettings = function () {
+	    'use strict';
+	
+	    var settingsContainer = void 0;
+	
+	    var load = function load() {
+	        settingsContainer = $('.fx-settings');
+	
+	        if (!Client.is_logged_in()) {
+	            $('#client_message').show().find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
+	                Login.redirect_to_login();
+	            });
+	        } else {
+	            if (!Client.is_virtual()) {
+	                settingsContainer.find('#fx-settings-content').show().find('.fx-real').show();
+	                return;
+	            }
+	            settingsContainer.find('#fx-settings-content').show();
+	        }
+	    };
+	
+	    return {
+	        load: load
+	    };
+	}();
+	
+	module.exports = ChampionSettings;
+
+/***/ },
+/* 430 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var getAppId = __webpack_require__(301).getAppId;
+	var getLanguage = __webpack_require__(303).getLanguage;
+	var Client = __webpack_require__(304);
+	
+	var Login = function () {
+	    'use strict';
+	
+	    var redirect_to_login = function redirect_to_login() {
+	        if (!Client.is_logged_in() && !is_login_pages()) {
+	            try {
+	                sessionStorage.setItem('redirect_url', window.location.href);
+	            } catch (e) {
+	                console.error('The website needs features which are not enabled on private mode browsing. Please use normal mode.');
+	            }
+	            window.location.href = login_url();
+	        }
+	    };
+	
+	    var login_url = function login_url() {
+	        var server_url = localStorage.getItem('config.server_url');
+	        return server_url && /qa/.test(server_url) ? 'https://www.' + server_url.split('.')[1] + '.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage() : 'https://oauth.champion-fx.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage();
+	    };
+	
+	    var is_login_pages = function is_login_pages() {
+	        return (/logged_inws|oauth2/.test(document.URL)
+	        );
+	    };
+	
+	    return {
+	        redirect_to_login: redirect_to_login
+	    };
+	}();
+	
+	module.exports = Login;
+
+/***/ },
+/* 431 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	var ChampionSocket = __webpack_require__(301);
 	var Client = __webpack_require__(304);
 	var Validation = __webpack_require__(313);
@@ -35854,48 +35936,7 @@
 	module.exports = ChangePassword;
 
 /***/ },
-/* 430 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var getAppId = __webpack_require__(301).getAppId;
-	var getLanguage = __webpack_require__(303).getLanguage;
-	var Client = __webpack_require__(304);
-	
-	var Login = function () {
-	    'use strict';
-	
-	    var redirect_to_login = function redirect_to_login() {
-	        if (!Client.is_logged_in() && !is_login_pages()) {
-	            try {
-	                sessionStorage.setItem('redirect_url', window.location.href);
-	            } catch (e) {
-	                console.error('The website needs features which are not enabled on private mode browsing. Please use normal mode.');
-	            }
-	            window.location.href = login_url();
-	        }
-	    };
-	
-	    var login_url = function login_url() {
-	        var server_url = localStorage.getItem('config.server_url');
-	        return server_url && /qa/.test(server_url) ? 'https://www.' + server_url.split('.')[1] + '.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage() : 'https://oauth.champion-fx.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage();
-	    };
-	
-	    var is_login_pages = function is_login_pages() {
-	        return (/logged_inws|oauth2/.test(document.URL)
-	        );
-	    };
-	
-	    return {
-	        redirect_to_login: redirect_to_login
-	    };
-	}();
-	
-	module.exports = Login;
-
-/***/ },
-/* 431 */
+/* 432 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35976,7 +36017,7 @@
 	module.exports = TNCApproval;
 
 /***/ },
-/* 432 */
+/* 433 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36038,7 +36079,7 @@
 	module.exports = LostPassword;
 
 /***/ },
-/* 433 */
+/* 434 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36150,7 +36191,7 @@
 	module.exports = ResetPassword;
 
 /***/ },
-/* 434 */
+/* 435 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36187,7 +36228,7 @@
 	module.exports = BinaryOptions;
 
 /***/ },
-/* 435 */
+/* 436 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36278,7 +36319,7 @@
 	module.exports = LoggedIn;
 
 /***/ },
-/* 436 */
+/* 437 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36316,7 +36357,7 @@
 	module.exports = Cashier;
 
 /***/ },
-/* 437 */
+/* 438 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36370,7 +36411,7 @@
 	module.exports = CashierTopUpVirtual;
 
 /***/ },
-/* 438 */
+/* 439 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36405,7 +36446,7 @@
 	module.exports = CashierPaymentMethods;
 
 /***/ },
-/* 439 */
+/* 440 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36531,6 +36572,136 @@
 	}();
 	
 	module.exports = CashierPassword;
+
+/***/ },
+/* 441 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	var showLoadingImage = __webpack_require__(308).showLoadingImage;
+	var Client = __webpack_require__(304);
+	var ChampionSocket = __webpack_require__(301);
+	var Validation = __webpack_require__(313);
+	
+	var FinancialAssessment = function () {
+	    'use strict';
+	
+	    var form_selector = '#assessment_form';
+	
+	    var financial_assessment = {},
+	        arr_validation = [];
+	
+	    var load = function load() {
+	        showLoadingImage($('<div/>', { id: 'loading', class: 'center-text' }).insertAfter('#heading'));
+	        if (checkIsVirtual()) return;
+	        $(form_selector).on('submit', function (event) {
+	            event.preventDefault();
+	            submitForm();
+	            return false;
+	        });
+	        ChampionSocket.promise.then(function () {
+	            if (checkIsVirtual()) return;
+	            ChampionSocket.send({ get_financial_assessment: 1 }, function (response) {
+	                hideLoadingImg();
+	                financial_assessment = response.get_financial_assessment;
+	                Object.keys(response.get_financial_assessment).forEach(function (key) {
+	                    var val = response.get_financial_assessment[key];
+	                    $('#' + key).val(val);
+	                });
+	                arr_validation = [];
+	                var all_ids = $(form_selector).find('.form-input').find('>:first-child');
+	                for (var i = 0; i < all_ids.length; i++) {
+	                    arr_validation.push({ selector: '#' + all_ids[i].getAttribute('id'), validations: ['req'] });
+	                }
+	                Validation.init(form_selector, arr_validation);
+	            });
+	        });
+	    };
+	
+	    var submitForm = function submitForm() {
+	        $('#submit').attr('disabled', 'disabled');
+	
+	        if (Validation.validate(form_selector)) {
+	            var _ret = function () {
+	                var hasChanged = false;
+	                Object.keys(financial_assessment).forEach(function (key) {
+	                    var $key = $('#' + key);
+	                    if ($key.length && $key.val() !== financial_assessment[key]) {
+	                        hasChanged = true;
+	                    }
+	                });
+	                if (Object.keys(financial_assessment).length === 0) hasChanged = true;
+	                if (!hasChanged) {
+	                    showFormMessage('You did not change anything.', false);
+	                    setTimeout(function () {
+	                        $('#submit').removeAttr('disabled');
+	                    }, 1000);
+	                    return {
+	                        v: void 0
+	                    };
+	                }
+	
+	                var data = { set_financial_assessment: 1 };
+	                showLoadingImage($('#form_message'));
+	                $('#assessment_form').find('select').each(function () {
+	                    financial_assessment[$(this).attr('id')] = data[$(this).attr('id')] = $(this).val();
+	                });
+	                ChampionSocket.send(data, function (response) {
+	                    $('#submit').removeAttr('disabled');
+	                    if ('error' in response) {
+	                        showFormMessage('Sorry, an error occurred while processing your request.', false);
+	                    } else {
+	                        showFormMessage('Your changes have been updated successfully.', true);
+	                    }
+	                });
+	            }();
+	
+	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	        } else {
+	            setTimeout(function () {
+	                $('#submit').removeAttr('disabled');
+	            }, 1000);
+	        }
+	    };
+	
+	    var hideLoadingImg = function hideLoadingImg(show_form) {
+	        $('#loading').remove();
+	        if (typeof show_form === 'undefined') {
+	            show_form = true;
+	        }
+	        if (show_form) {
+	            $('#assessment_form').removeClass('invisible');
+	        }
+	    };
+	
+	    var checkIsVirtual = function checkIsVirtual() {
+	        if (Client.get_boolean('is_virtual')) {
+	            $('#assessment_form').addClass('invisible');
+	            $('#response_on_success').addClass('notice-msg center-text').removeClass('invisible').text('This feature is not relevant to virtual-money accounts.');
+	            hideLoadingImg(false);
+	            return true;
+	        }
+	        return false;
+	    };
+	
+	    var showFormMessage = function showFormMessage(msg, isSuccess) {
+	        $('#form_message').attr('class', isSuccess ? 'success-msg' : 'errorfield').html(isSuccess ? '<ul class="checked" style="display: inline-block;"><li>' + msg + '</li></ul>' : msg).css('display', 'block').delay(5000).fadeOut(1000);
+	    };
+	
+	    var unload = function unload() {
+	        $(form_selector).off('submit');
+	    };
+	
+	    return {
+	        load: load,
+	        unload: unload
+	    };
+	}();
+	
+	module.exports = FinancialAssessment;
 
 /***/ }
 /******/ ]);
