@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
 
-    <title>Password Reset | Champion-FX.com</title>
+    <title>Settings | Champion-FX.com</title>
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/CFX_favicon32.png" />
@@ -158,89 +158,67 @@
     </div>
     <main class="page-content" aria-label="Content" id="champion-container">
         <div class="wrapper" id="champion-content">
-            <div class="fx-section" id="reset_passwordws">
-    <div class="container">
-        <h1>Password Reset</h1>
-        <p class="notice-msg">Please check your email to retrieve the token needed to reset your password.</p>
-        <div class="invisible" id="reset-error">
-            <p id="reset-error-msg"></p>
-            <a href="/en/lost-password.html">Click here to retry</a>
+            <div class="fx-section">
+    <div class="fx-settings container">
+
+        <div class="row">
+            <div class="col-sm">
+                <h1>Settings</h1>
+            </div>
         </div>
-        <form id="frm_reset_password">
-            <fieldset>
-                <legend>Details</legend>
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_verification_code">Verification Token</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_verification_code" type="text" autocomplete="off" maxlength="48" />
-                            <div class="hint">Please check your email for the value of this token</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_password">New Password</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_password" type="password" maxlength="25" />
-                            <p class="hint" id="password-hint">Minimum of six lower and uppercase letters with numbers</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_re_password">Confirm New Password</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_re_password" type="password" maxlength="25" />
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="chk_has_real">I have a Real Money Account</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="chk_has_real" type="checkbox" />
-                        </div>
-                    </div>
-                </div>
-                <div class="row invisible" id="dob_row">
-                    <div class="col-xs-4">
-                        <div class="form-label">
-                            <label for="txt_birth_date">Date of Birth</label>
-                        </div>
-                    </div>
-                    <div class="col-xs-8">
-                        <div class="form-input">
-                            <input id="txt_birth_date" type="text" class="text" size="12" readonly="readonly" />
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            <div class="row">
-                <div class="col-xs-4"></div>
-                <div class="col-xs-8">
-                <span class="button">
-                    <button id="btn_submit" name="submit" type="button">Reset Password</button>
-                </span>
+
+        <div class="errorbox rbox centered" id="client_message" style="display:none">
+            <div class="rbox-wrap">
+                <div class="gr-12 rbox-content" id="client_message_content">
+                    <p class="center notice-msg"></p>
                 </div>
             </div>
-        </form>
+        </div>
+
+        <div id="fx-settings-content" style="display: none">
+            <div class="row">
+                <div class="col-xs-3">
+                    <a href="/en/user/change-password.html">
+                        <div class="fx-md fx-account-password"></div>
+                        <h4>Account password</h4>
+                    </a>
+                    <p>Change your main login password.</p>
+                </div>
+
+                <div class="col-xs-3 fx-real" style="display: none">
+                    <a href="/en/cashier/cashier-password.html">
+                        <div class="fx-md fx-cashier-password"></div>
+                        <h4>Cashier password</h4>
+                    </a>
+                    <p>Change the password used for deposits and withdrawals.</p>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href="/en/cashier.html">
+                        <div class="fx-md fx-manage-your-funds"></div>
+                        <h4>Manage your funds</h4>
+                    </a>
+                    <p>Deposit and withdraw funds via bank wire, credit card, or e-cash.</p>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href="http://webtrader.champion-fx.com/v2.1.17/main.html" target="_blank">
+                        <div class="fx-md fx-webtrader"></div>
+                        <h4>Webtrader</h4>
+                    </a>
+                    <p>Manage your Webtrader account for binary options trading.</p>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href="user/metatrader" target="_blank">
+                        <div class="fx-md fx-mt5"></div>
+                        <h4>MetaTrader</h4>
+                    </a>
+                    <p>Manage your MetaTrader account for Forex and CFD trading.</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
         </div>
