@@ -18478,6 +18478,7 @@
 	var CashierPaymentMethods = __webpack_require__(439);
 	var CashierPassword = __webpack_require__(440);
 	var FinancialAssessment = __webpack_require__(441);
+	var checkRiskClassification = __webpack_require__(443);
 	
 	var Champion = function () {
 	    'use strict';
@@ -18536,6 +18537,7 @@
 	        if (!_active_script) _active_script = ChampionSignup;
 	        ChampionSignup.load();
 	        Utility.handleActive();
+	        checkRiskClassification();
 	    };
 	
 	    return {
@@ -18569,7 +18571,12 @@
 	
 	    var buffered = [],
 	        registered_callbacks = {},
-	        priority_requests = { authorize: false, balance: false, get_settings: false, website_status: false };
+	        priority_requests = {
+	        authorize: false,
+	        get_settings: false,
+	        website_status: false,
+	        get_account_status: false
+	    };
 	
 	    var promise = new Promise(function (resolve, reject) {
 	        socketResolve = resolve;
@@ -18587,7 +18594,6 @@
 	            }
 	            ChampionSocket.send({ website_status: 1 });
 	        } else {
-	            var country_code = void 0;
 	            State.set(['response', message.msg_type], message);
 	            switch (message.msg_type) {
 	                case 'authorize':
@@ -18598,6 +18604,12 @@
 	                        Client.response_authorize(message);
 	                        ChampionSocket.send({ balance: 1, subscribe: 1 });
 	                        ChampionSocket.send({ get_settings: 1 });
+	                        ChampionSocket.send({ get_account_status: 1 });
+	                        var country_code = message.authorize.country;
+	                        if (country_code) {
+	                            Client.set_value('residence', country_code);
+	                            ChampionSocket.send({ landing_company: country_code });
+	                        }
 	                        Header.userMenu();
 	                        $('#btn_logout').click(function () {
 	                            // TODO: to be moved from here
@@ -18611,22 +18623,27 @@
 	                    break;
 	                case 'balance':
 	                    Header.updateBalance(message);
-	                    priority_requests.balance = true;
 	                    break;
 	                case 'get_settings':
 	                    if (message.error) {
 	                        socketReject();
 	                        return;
 	                    }
-	                    country_code = message.get_settings.country_code;
-	                    if (country_code) {
-	                        Client.set_value('residence', country_code);
-	                        ChampionSocket.send({ landing_company: country_code });
-	                    }
 	                    priority_requests.get_settings = true;
 	                    break;
 	                case 'website_status':
 	                    priority_requests.website_status = true;
+	                    break;
+	                case 'get_account_status':
+	                    priority_requests.get_account_status = true;
+	                    if (message.get_account_status && message.get_account_status.risk_classification === 'high') {
+	                        priority_requests.get_financial_assessment = false;
+	                        ChampionSocket.send({ get_financial_assessment: 1 });
+	                    }
+	                    break;
+	                case 'get_financial_assessment':
+	                    priority_requests.get_financial_assessment = true;
+	                    break;
 	                // no default
 	            }
 	            if (!socket_resolved && Object.keys(priority_requests).every(function (c) {
@@ -20146,7 +20163,7 @@
 	        $button = void 0;
 	
 	    var load = function load() {
-	        if (Client.is_logged_in() || /(new-account|terms-and-conditions)/.test(window.location.pathname)) {
+	        if (Client.is_logged_in() || /(new-account|terms-and-conditions|user|cashier)/.test(window.location.pathname)) {
 	            changeVisibility($(form_selector), 'hide');
 	        } else {
 	            changeVisibility($(form_selector), 'show');
@@ -36585,6 +36602,8 @@
 	var Client = __webpack_require__(304);
 	var ChampionSocket = __webpack_require__(301);
 	var Validation = __webpack_require__(313);
+	var State = __webpack_require__(305).State;
+	var RiskClassification = __webpack_require__(442);
 	
 	var FinancialAssessment = function () {
 	    'use strict';
@@ -36605,20 +36624,27 @@
 	        ChampionSocket.promise.then(function () {
 	            if (checkIsVirtual()) return;
 	            ChampionSocket.send({ get_financial_assessment: 1 }, function (response) {
-	                hideLoadingImg();
-	                financial_assessment = response.get_financial_assessment;
-	                Object.keys(response.get_financial_assessment).forEach(function (key) {
-	                    var val = response.get_financial_assessment[key];
-	                    $('#' + key).val(val);
-	                });
-	                arr_validation = [];
-	                var all_ids = $(form_selector).find('.form-input').find('>:first-child');
-	                for (var i = 0; i < all_ids.length; i++) {
-	                    arr_validation.push({ selector: '#' + all_ids[i].getAttribute('id'), validations: ['req'] });
-	                }
-	                Validation.init(form_selector, arr_validation);
+	                handleForm(response);
 	            });
 	        });
+	    };
+	
+	    var handleForm = function handleForm(response) {
+	        if (!response) {
+	            response = State.get(['response', 'get_financial_assessment']);
+	        }
+	        hideLoadingImg();
+	        financial_assessment = response.get_financial_assessment;
+	        Object.keys(response.get_financial_assessment).forEach(function (key) {
+	            var val = response.get_financial_assessment[key];
+	            $('#' + key).val(val);
+	        });
+	        arr_validation = [];
+	        var all_ids = $(form_selector).find('.form-input').find('>:first-child');
+	        for (var i = 0; i < all_ids.length; i++) {
+	            arr_validation.push({ selector: '#' + all_ids[i].getAttribute('id'), validations: ['req'] });
+	        }
+	        Validation.init(form_selector, arr_validation);
 	    };
 	
 	    var submitForm = function submitForm() {
@@ -36655,6 +36681,7 @@
 	                        showFormMessage('Sorry, an error occurred while processing your request.', false);
 	                    } else {
 	                        showFormMessage('Your changes have been updated successfully.', true);
+	                        RiskClassification.cleanup();
 	                    }
 	                });
 	            }();
@@ -36697,11 +36724,106 @@
 	
 	    return {
 	        load: load,
-	        unload: unload
+	        unload: unload,
+	        handleForm: handleForm,
+	        submitForm: submitForm
 	    };
 	}();
 	
 	module.exports = FinancialAssessment;
+
+/***/ },
+/* 442 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var RiskClassification = function () {
+	    'use strict';
+	
+	    var showRiskClassificationPopUp = function showRiskClassificationPopUp(content) {
+	        if ($('#risk_classification').length > 0) {
+	            return;
+	        }
+	        var lightboxDiv = $("<div id='risk_classification' class='lightbox'></div>");
+	
+	        var wrapper = $('<div></div>');
+	        wrapper = wrapper.append(content);
+	        wrapper = $('<div></div>').append(wrapper);
+	        wrapper.appendTo(lightboxDiv);
+	        lightboxDiv.appendTo('body');
+	    };
+	
+	    var cleanup = function cleanup() {
+	        $('#risk_classification').remove();
+	    };
+	
+	    return {
+	        showRiskClassificationPopUp: showRiskClassificationPopUp,
+	        cleanup: cleanup
+	    };
+	}();
+	
+	module.exports = RiskClassification;
+
+/***/ },
+/* 443 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var RiskClassification = __webpack_require__(442);
+	var FinancialAssessment = __webpack_require__(441);
+	var Client = __webpack_require__(304);
+	var url_for = __webpack_require__(306).url_for;
+	var ChampionSocket = __webpack_require__(301);
+	var State = __webpack_require__(305).State;
+	
+	var renderRiskClassificationPopUp = function renderRiskClassificationPopUp() {
+	    if (window.location.pathname === '/user/assessment') {
+	        window.location.href = url_for('user/settings');
+	        return;
+	    }
+	    $.ajax({
+	        url: url_for('user/assessment'),
+	        dataType: 'html',
+	        method: 'GET',
+	        success: function success(riskClassificationText) {
+	            if (riskClassificationText.includes('assessment_form')) {
+	                var payload = $(riskClassificationText);
+	                RiskClassification.showRiskClassificationPopUp(payload.find('#assessment_form'));
+	                var $risk_classification = $('#risk_classification');
+	                $risk_classification.find('#assessment_form').removeClass('invisible').attr('style', 'text-align: left;');
+	                $risk_classification.find('#high_risk_classification').removeClass('invisible');
+	                $risk_classification.find('#heading_risk').removeClass('invisible');
+	                handleForm($risk_classification);
+	            }
+	        },
+	        error: function error() {
+	            return false;
+	        }
+	    });
+	    handleForm($('#risk_classification'));
+	};
+	
+	var handleForm = function handleForm($risk_classification) {
+	    FinancialAssessment.handleForm();
+	    $risk_classification.find('#assessment_form').on('submit', function (event) {
+	        event.preventDefault();
+	        FinancialAssessment.submitForm();
+	        return false;
+	    });
+	};
+	
+	var checkRiskClassification = function checkRiskClassification() {
+	    ChampionSocket.promise.then(function () {
+	        if (!State.get(['response', 'get_financial_assessment', 'get_financial_assessment']) && State.get(['response', 'get_account_status', 'get_account_status', 'risk_classification']) === 'high' && Client.is_logged_in() && !Client.is_virtual()) {
+	            renderRiskClassificationPopUp();
+	        }
+	    });
+	};
+	
+	module.exports = checkRiskClassification;
 
 /***/ }
 /******/ ]);
