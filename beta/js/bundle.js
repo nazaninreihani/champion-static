@@ -36917,6 +36917,7 @@
 
 	'use strict';
 	
+	var ChampionSocket = __webpack_require__(301);
 	var Client = __webpack_require__(304);
 	
 	var Cashier = function () {
@@ -36924,21 +36925,22 @@
 	
 	    var cashierContainer = void 0;
 	
+	    var hidden_class = 'hidden';
+	
 	    var load = function load() {
 	        cashierContainer = $('.fx-cashier');
 	
-	        if (Client.is_logged_in() && Client.is_virtual()) {
-	            cashierContainer.find('.fx-virtual').show();
-	            cashierContainer.find('.fx-real').hide();
-	            if (Client.get_value('balance') > 1000) {
-	                $('#VRT_topup_link').prop('href', 'javascript;:').addClass('button-disabled');
-	            }
-	        } else if (Client.is_logged_in() && !Client.is_virtual()) {
-	            cashierContainer.find('.fx-real').show();
-	            cashierContainer.find('.fx-virtual').hide();
-	        } else {
-	            cashierContainer.find('.fx-virtual').hide();
-	            cashierContainer.find('.fx-real').hide();
+	        if (Client.is_logged_in()) {
+	            ChampionSocket.promise().then(function () {
+	                if (Client.is_virtual()) {
+	                    cashierContainer.find('.fx-virtual').removeClass(hidden_class);
+	                    if (Client.get_value('balance') > 1000) {
+	                        $('#VRT_topup_link').prop('href', 'javascript;:').addClass('button-disabled');
+	                    }
+	                } else {
+	                    cashierContainer.find('.fx-real').removeClass(hidden_class);
+	                }
+	            });
 	        }
 	    };
 	
@@ -36962,22 +36964,28 @@
 	var CashierTopUpVirtual = function () {
 	    'use strict';
 	
-	    var container = void 0,
+	    var topUpContainer = void 0,
 	        viewError = void 0,
 	        viewSuccess = void 0;
 	
-	    var load = function load() {
-	        container = $('#topup_virtual');
-	        viewError = container.find('#viewError');
-	        viewSuccess = container.find('#viewSuccess');
+	    var hidden_class = 'hidden';
 	
-	        if (Client.is_logged_in() && Client.is_virtual()) {
-	            top_up_virtual();
-	        } else if (Client.is_logged_in() && !Client.is_virtual()) {
-	            viewError.removeClass('hidden').find('.notice-msg').text('Sorry, this feature is available to virtual accounts only.');
-	        } else {
-	            viewError.removeClass('hidden').find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
+	    var load = function load() {
+	        topUpContainer = $('#topup_virtual');
+	        viewError = topUpContainer.find('#viewError');
+	        viewSuccess = topUpContainer.find('#viewSuccess');
+	
+	        if (!Client.is_logged_in()) {
+	            viewError.removeClass(hidden_class).find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
 	                Login.redirect_to_login();
+	            });
+	        } else {
+	            ChampionSocket.promise().then(function () {
+	                if (Client.is_virtual()) {
+	                    top_up_virtual();
+	                } else {
+	                    viewError.removeClass(hidden_class).find('.notice-msg').text('Sorry, this feature is available to virtual accounts only.');
+	                }
 	            });
 	        }
 	    };
@@ -36988,9 +36996,9 @@
 	        };
 	        ChampionSocket.send(data, function (response) {
 	            if (response.error) {
-	                viewError.removeClass('hidden').find('.notice-msg').text(response.error.message);
+	                viewError.removeClass(hidden_class).find('.notice-msg').text(response.error.message);
 	            } else {
-	                viewSuccess.removeClass('hidden').find('.notice-msg').text('[_1] [_2] has been credited to your Virtual money account [_3]', [response.topup_virtual.currency, response.topup_virtual.amount, Client.get_value('loginid')]);
+	                viewSuccess.removeClass(hidden_class).find('.notice-msg').text('[_1] [_2] has been credited to your Virtual money account [_3]', [response.topup_virtual.currency, response.topup_virtual.amount, Client.get_value('loginid')]);
 	            }
 	        });
 	    };
@@ -37009,6 +37017,7 @@
 
 	'use strict';
 	
+	var ChampionSocket = __webpack_require__(301);
 	var Client = __webpack_require__(304);
 	
 	var CashierPaymentMethods = function () {
@@ -37016,18 +37025,20 @@
 	
 	    var paymentMethodsContainer = void 0;
 	
+	    var hidden_class = 'hidden';
+	
 	    var load = function load() {
 	        paymentMethodsContainer = $('.fx-payment-methods');
 	
-	        if (Client.is_logged_in() && Client.is_virtual()) {
-	            paymentMethodsContainer.find('.fx-real').hide();
-	            paymentMethodsContainer.find('.fx-logged-out').hide();
-	        } else if (Client.is_logged_in() && !Client.is_virtual()) {
-	            paymentMethodsContainer.find('.fx-real').show();
-	            paymentMethodsContainer.find('.fx-logged-out').hide();
+	        if (!Client.is_logged_in()) {
+	            paymentMethodsContainer.find('#btn-open-account').removeClass(hidden_class);
 	        } else {
-	            paymentMethodsContainer.find('.fx-real').hide();
-	            paymentMethodsContainer.find('.fx-logged-out').show();
+	            ChampionSocket.promise().then(function () {
+	                if (!Client.is_virtual()) {
+	                    paymentMethodsContainer.find('#btn-deposit').removeClass(hidden_class);
+	                    paymentMethodsContainer.find('#btn-withdraw').removeClass(hidden_class);
+	                }
+	            });
 	        }
 	    };
 	
