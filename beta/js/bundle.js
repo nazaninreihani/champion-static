@@ -18457,12 +18457,13 @@
 	'use strict';
 	
 	var Client = __webpack_require__(301);
-	var LoggedIn = __webpack_require__(306);
-	var Login = __webpack_require__(309);
+	var Header = __webpack_require__(309);
+	var LoggedIn = __webpack_require__(311);
+	var Login = __webpack_require__(312);
 	var ChampionRouter = __webpack_require__(313);
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
-	var Utility = __webpack_require__(307);
+	var Utility = __webpack_require__(306);
 	var BinaryOptions = __webpack_require__(314);
 	var ChampionContact = __webpack_require__(299);
 	var ChampionEndpoint = __webpack_require__(315);
@@ -18485,16 +18486,26 @@
 	var Champion = function () {
 	    'use strict';
 	
-	    var _container = void 0,
-	        _active_script = null;
+	    var container = void 0,
+	        active_script = null;
 	
 	    var init = function init() {
-	        _container = $('#champion-container');
-	        _container.on('champion:before', beforeContentChange);
-	        _container.on('champion:after', afterContentChange);
+	        container = $('#champion-container');
+	        container.on('champion:before', beforeContentChange);
+	        container.on('champion:after', afterContentChange);
 	        Client.init();
-	        ChampionSocket.init();
-	        ChampionRouter.init(_container, '#champion-content');
+	        ChampionSocket.init({
+	            authorize: function authorize(response) {
+	                Client.response_authorize(response);
+	            },
+	            balance: function balance(response) {
+	                Header.updateBalance(response);
+	            },
+	            logout: function logout(response) {
+	                Client.do_logout(response);
+	            }
+	        }, Client.is_logged_in());
+	        ChampionRouter.init(container, '#champion-content');
 	        if (!Client.is_logged_in()) {
 	            $('#main-login').find('a').on('click', function () {
 	                Login.redirect_to_login();
@@ -18505,44 +18516,85 @@
 	    };
 	
 	    var beforeContentChange = function beforeContentChange() {
-	        if (_active_script) {
-	            if (typeof _active_script.unload === 'function') {
-	                _active_script.unload();
+	        if (active_script) {
+	            if (typeof active_script.unload === 'function') {
+	                active_script.unload();
 	            }
-	            _active_script = null;
+	            active_script = null;
 	        }
 	    };
 	
 	    var afterContentChange = function afterContentChange(e, content) {
 	        var page = content.getAttribute('data-page');
 	        var pages_map = {
-	            assessment: FinancialAssessment,
-	            cashier: Cashier,
-	            contact: ChampionContact,
-	            endpoint: ChampionEndpoint,
-	            logged_inws: LoggedIn,
-	            metatrader: MetaTrader,
-	            real: ChampionNewReal,
-	            settings: ChampionSettings,
-	            virtual: ChampionNewVirtual,
-	            'binary-options': BinaryOptions,
-	            'cashier-password': CashierPassword,
-	            'change-password': ChangePassword,
-	            'lost-password': LostPassword,
-	            'payment-methods': CashierPaymentMethods,
-	            'reset-password': ResetPassword,
-	            'tnc-approval': TNCApproval,
-	            'top-up-virtual': CashierTopUpVirtual
+	            assessment: { module: FinancialAssessment, is_authenticated: true, only_real: true },
+	            cashier: { module: Cashier },
+	            contact: { module: ChampionContact },
+	            endpoint: { module: ChampionEndpoint },
+	            logged_inws: { module: LoggedIn },
+	            metatrader: { module: MetaTrader, is_authenticated: true },
+	            real: { module: ChampionNewReal, is_authenticated: true, only_virtual: true },
+	            settings: { module: ChampionSettings, is_authenticated: true },
+	            virtual: { module: ChampionNewVirtual, not_authenticated: true },
+	            'binary-options': { module: BinaryOptions },
+	            'cashier-password': { module: CashierPassword, is_authenticated: true, only_real: true },
+	            'change-password': { module: ChangePassword, is_authenticated: true },
+	            'lost-password': { module: LostPassword, not_authenticated: true },
+	            'payment-methods': { module: CashierPaymentMethods },
+	            'reset-password': { module: ResetPassword, not_authenticated: true },
+	            'tnc-approval': { module: TNCApproval, is_authenticated: true, only_real: true },
+	            'top-up-virtual': { module: CashierTopUpVirtual, is_authenticated: true, only_virtual: true }
 	        };
 	        if (page in pages_map) {
-	            _active_script = pages_map[page];
-	            _active_script.load();
+	            loadHandler(pages_map[page]);
 	        }
 	
-	        if (!_active_script) _active_script = ChampionSignup;
+	        if (!active_script) active_script = ChampionSignup;
+	        Header.init();
 	        ChampionSignup.load();
 	        Utility.handleActive();
+	        ChampionSocket.wait('get_settings', 'get_account_status').then(function () {
+	            Client.check_tnc();
+	        });
 	        checkRiskClassification();
+	    };
+	
+	    var errorMessages = {
+	        login: function login() {
+	            return Utility.template('Please <a href="[_1]">log in</a> to view this page.', [Login.login_url()]);
+	        },
+	        only_virtual: 'Sorry, this feature is available to virtual accounts only.',
+	        only_real: 'This feature is not relevant to virtual-money accounts.'
+	    };
+	
+	    var loadHandler = function loadHandler(config) {
+	        active_script = config.module;
+	        if (config.is_authenticated) {
+	            if (!Client.is_logged_in()) {
+	                displayMessage(errorMessages.login());
+	            } else {
+	                ChampionSocket.wait('authorize').then(function (response) {
+	                    if (response.error) {
+	                        displayMessage(errorMessages.login());
+	                    } else if (config.only_virtual && !Client.is_virtual()) {
+	                        displayMessage(errorMessages.only_virtual);
+	                    } else if (config.only_real && Client.is_virtual()) {
+	                        displayMessage(errorMessages.only_real);
+	                    } else {
+	                        active_script.load();
+	                    }
+	                });
+	            }
+	        } else if (config.not_authenticated && Client.is_logged_in()) {
+	            ChampionRouter.forward(default_redirect_url(), true);
+	        } else {
+	            active_script.load();
+	        }
+	    };
+	
+	    var displayMessage = function displayMessage(message) {
+	        var $content = container.find('#champion-content .container');
+	        $content.html($content.find('h1')).append($('<p/>', { class: 'center-text notice-msg', html: message }));
 	    };
 	
 	    return {
@@ -18563,6 +18615,8 @@
 	var State = __webpack_require__(302).State;
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
 	var url_for = __webpack_require__(304).url_for;
+	var template = __webpack_require__(306).template;
+	var ChampionSocket = __webpack_require__(308);
 	var Cookies = __webpack_require__(303);
 	
 	var Client = function () {
@@ -18589,6 +18643,8 @@
 	        set('email', Cookies.get('email'));
 	        set('loginid', Cookies.get('loginid'));
 	        set('residence', Cookies.get('residence'));
+	
+	        endpoint_notification();
 	    };
 	
 	    var is_logged_in = function is_logged_in() {
@@ -18619,6 +18675,11 @@
 	    };
 	
 	    var response_authorize = function response_authorize(response) {
+	        if (response.error || response.authorize.loginid !== Client.get('loginid')) {
+	            request_logout();
+	            return;
+	        }
+	
 	        var authorize = response.authorize;
 	        if (!Cookies.get('email')) {
 	            set_cookie('email', authorize.email);
@@ -18628,11 +18689,25 @@
 	        set('landing_company_name', authorize.landing_company_name);
 	        set('landing_company_fullname', authorize.landing_company_fullname);
 	        set('currency', authorize.currency);
+	        set('balance', authorize.balance);
 	        client_object.values_set = true;
 	
 	        if (authorize.is_virtual && !get('has_real')) {
 	            $('.upgrade-message').removeClass('hidden');
 	        }
+	
+	        ChampionSocket.send({ balance: 1, subscribe: 1 });
+	        ChampionSocket.send({ get_settings: 1 });
+	        ChampionSocket.send({ get_account_status: 1 });
+	        var country_code = response.authorize.country;
+	        if (country_code) {
+	            Client.set('residence', country_code);
+	            ChampionSocket.send({ landing_company: country_code });
+	        }
+	
+	        $('#btn_logout').click(function () {
+	            request_logout();
+	        });
 	    };
 	
 	    var check_tnc = function check_tnc() {
@@ -18704,6 +18779,10 @@
 	        window.location.href = default_redirect_url();
 	    };
 	
+	    var request_logout = function request_logout() {
+	        ChampionSocket.send({ logout: '1' });
+	    };
+	
 	    var do_logout = function do_logout(response) {
 	        if (response.logout !== 1) return;
 	        Client.clear_storage_values();
@@ -18729,6 +18808,16 @@
 	            }
 	        });
 	        window.location.reload();
+	    };
+	
+	    var endpoint_notification = function endpoint_notification() {
+	        var server = localStorage.getItem('config.server_url');
+	        if (server && server.length > 0) {
+	            var message = template('This is a staging server - For testing purposes only - The server <a href="[_1]">endpoint</a> is: [_2]', [url_for('endpoint'), server]);
+	            var $end_note = $('#end_note');
+	            $end_note.html(message).removeClass('invisible');
+	            $('#footer').css('padding-bottom', $end_note.height() + 10);
+	        }
 	    };
 	
 	    return {
@@ -19234,98 +19323,7 @@
 
 	'use strict';
 	
-	var isEmptyObject = __webpack_require__(307).isEmptyObject;
-	var getLanguage = __webpack_require__(305).getLanguage;
-	var Client = __webpack_require__(301);
-	var url_for = __webpack_require__(304).url_for;
-	var default_redirect_url = __webpack_require__(304).default_redirect_url;
-	var Cookies = __webpack_require__(303);
-	
-	var LoggedIn = function () {
-	    'use strict';
-	
-	    var load = function load() {
-	        var tokens = storeTokens();
-	        var loginid = Cookies.get('loginid'),
-	            redirect_url = void 0;
-	
-	        if (!loginid) {
-	            (function () {
-	                // redirected to another domain (e.g. github.io) so those cookie are not accessible here
-	                var loginids = Object.keys(tokens);
-	                var loginid_list = '';
-	                loginids.map(function (id) {
-	                    loginid_list += '' + (loginid_list ? '+' : '') + id + ':' + (/^V/i.test(id) ? 'V' : 'R') + ':E'; // since there is not any data source to check, so assume all are enabled, disabled accounts will be handled on authorize
-	                });
-	                loginid = loginids[0];
-	                // set cookies
-	                Client.set_cookie('loginid', loginid);
-	                Client.set_cookie('loginid_list', loginid_list);
-	            })();
-	        }
-	        Client.set_cookie('token', tokens[loginid]);
-	
-	        // redirect url
-	        redirect_url = sessionStorage.getItem('redirect_url');
-	        sessionStorage.removeItem('redirect_url');
-	
-	        // redirect back
-	        var set_default = true;
-	        if (redirect_url) {
-	            var do_not_redirect = ['reset-password', 'lost-password', 'change-password', 'home'];
-	            var reg = new RegExp(do_not_redirect.join('|'), 'i');
-	            if (!reg.test(redirect_url) && url_for('') !== redirect_url) {
-	                set_default = false;
-	            }
-	        }
-	        if (set_default) {
-	            redirect_url = default_redirect_url();
-	            var lang_cookie = Cookies.get('language');
-	            var language = getLanguage();
-	            if (lang_cookie && lang_cookie !== language) {
-	                redirect_url = redirect_url.replace(new RegExp('/' + language + '/', 'i'), '/' + lang_cookie.toLowerCase() + '/');
-	            }
-	        }
-	        document.getElementById('loading_link').setAttribute('href', redirect_url);
-	        window.location.href = redirect_url;
-	    };
-	
-	    var storeTokens = function storeTokens() {
-	        // Parse hash for loginids and tokens returned by OAuth
-	        var hash = (/acct1/i.test(window.location.hash) ? window.location.hash : window.location.search).substr(1).split('&');
-	        var tokens = {};
-	        for (var i = 0; i < hash.length; i += 2) {
-	            var loginid = getHashValue(hash[i], 'acct');
-	            var token = getHashValue(hash[i + 1], 'token');
-	            if (loginid && token) {
-	                tokens[loginid] = token;
-	            }
-	        }
-	        if (!isEmptyObject(tokens)) {
-	            Client.set('tokens', JSON.stringify(tokens));
-	        }
-	        return tokens;
-	    };
-	
-	    var getHashValue = function getHashValue(source, key) {
-	        var match = new RegExp('^' + key);
-	        return source && source.length > 0 ? match.test(source.split('=')[0]) ? source.split('=')[1] : '' : '';
-	    };
-	
-	    return {
-	        load: load
-	    };
-	}();
-	
-	module.exports = LoggedIn;
-
-/***/ },
-/* 307 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	__webpack_require__(308);
+	__webpack_require__(307);
 	
 	function showLoadingImage(container) {
 	    var theme = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'dark';
@@ -19474,7 +19472,7 @@
 	};
 
 /***/ },
-/* 308 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -19690,56 +19688,15 @@
 
 
 /***/ },
-/* 309 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var getAppId = __webpack_require__(310).getAppId;
-	var getLanguage = __webpack_require__(305).getLanguage;
-	var Client = __webpack_require__(301);
-	
-	var Login = function () {
-	    'use strict';
-	
-	    var redirect_to_login = function redirect_to_login() {
-	        if (!Client.is_logged_in() && !is_login_pages()) {
-	            try {
-	                sessionStorage.setItem('redirect_url', window.location.href);
-	            } catch (e) {
-	                console.error('The website needs features which are not enabled on private mode browsing. Please use normal mode.');
-	            }
-	            window.location.href = login_url();
-	        }
-	    };
-	
-	    var login_url = function login_url() {
-	        var server_url = localStorage.getItem('config.server_url');
-	        return server_url && /qa/.test(server_url) ? 'https://www.' + server_url.split('.')[1] + '.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage() : 'https://oauth.champion-fx.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage();
-	    };
-	
-	    var is_login_pages = function is_login_pages() {
-	        return (/logged_inws|oauth2/.test(document.URL)
-	        );
-	    };
-	
-	    return {
-	        redirect_to_login: redirect_to_login
-	    };
-	}();
-	
-	module.exports = Login;
-
-/***/ },
-/* 310 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Cookies = __webpack_require__(303);
 	var getLanguage = __webpack_require__(305).getLanguage;
-	var Client = __webpack_require__(301);
-	var Header = __webpack_require__(311);
 	var State = __webpack_require__(302).State;
 	
 	var ChampionSocket = function () {
@@ -19747,114 +19704,17 @@
 	
 	    var socket = void 0,
 	        req_id = 0,
-	        _promise = void 0,
-	        message_callback = void 0,
-	        keep_alive_timeout = void 0,
-	        socket_resolved = void 0,
-	        socketResolve = void 0,
-	        socketReject = void 0;
+	        client_is_logged_in = void 0,
+	        keep_alive_timeout = void 0;
 	
 	    var buffered = [];
 	    var registered_callbacks = {};
-	    var priority_requests = {
-	        authorize: false,
-	        get_settings: false,
-	        website_status: false,
-	        get_account_status: false
-	    };
-	    var no_duplicate_requests = ['get_account_status', 'get_financial_assessment'];
+	    var no_duplicate_requests = ['authorize', 'get_settings', 'website_status', 'get_account_status', 'get_financial_assessment'];
+	    var default_calls = {};
 	
-	    var initPromise = function initPromise() {
-	        socket_resolved = false;
-	        _promise = _promise || new Promise(function (resolve, reject) {
-	            socketResolve = resolve;
-	            socketReject = reject;
-	        });
-	    };
-	
-	    var socketMessage = function socketMessage(message) {
-	        if (!message) {
-	            // socket just opened
-	            var token = Cookies.get('token');
-	            if (token) {
-	                ChampionSocket.send({ authorize: token });
-	            } else {
-	                Header.userMenu();
-	            }
-	            ChampionSocket.send({ website_status: 1 });
-	        } else {
-	            switch (message.msg_type) {
-	                case 'authorize':
-	                    if (message.error || message.authorize.loginid !== Client.get('loginid')) {
-	                        ChampionSocket.send({ logout: '1' });
-	                        socketReject();
-	                    } else {
-	                        Client.response_authorize(message);
-	                        ChampionSocket.send({ balance: 1, subscribe: 1 });
-	                        ChampionSocket.send({ get_settings: 1 });
-	                        ChampionSocket.send({ get_account_status: 1 });
-	                        var country_code = message.authorize.country;
-	                        if (country_code) {
-	                            Client.set('residence', country_code);
-	                            ChampionSocket.send({ landing_company: country_code });
-	                        }
-	                        Header.userMenu();
-	                        $('#btn_logout').click(function () {
-	                            // TODO: to be moved from here
-	                            ChampionSocket.send({ logout: 1 });
-	                        });
-	                        priority_requests.authorize = true;
-	                    }
-	                    break;
-	                case 'logout':
-	                    Client.do_logout(message);
-	                    break;
-	                case 'balance':
-	                    Header.updateBalance(message);
-	                    break;
-	                case 'get_settings':
-	                    if (message.error) {
-	                        socketReject();
-	                        return;
-	                    }
-	                    priority_requests.get_settings = true;
-	                    break;
-	                case 'website_status':
-	                    priority_requests.website_status = true;
-	                    break;
-	                case 'get_account_status':
-	                    priority_requests.get_account_status = true;
-	                    if (message.get_account_status && message.get_account_status.risk_classification === 'high') {
-	                        priority_requests.get_financial_assessment = false;
-	                        ChampionSocket.send({ get_financial_assessment: 1 });
-	                    }
-	                    break;
-	                case 'get_financial_assessment':
-	                    priority_requests.get_financial_assessment = true;
-	                    break;
-	                // no default
-	            }
-	            if (!socket_resolved && Object.keys(priority_requests).every(function (c) {
-	                return priority_requests[c];
-	            })) {
-	                socketResolve();
-	                Client.check_tnc();
-	                socket_resolved = true;
-	            }
-	
-	            clearTimeout(keep_alive_timeout);
-	            keep_alive_timeout = setTimeout(function () {
-	                send({ ping: 1 });
-	            }, 60000);
-	        }
-	    };
-	
-	    var init = function init() {
-	        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : socketMessage;
-	
-	        if (typeof callback === 'function') {
-	            message_callback = callback;
-	        }
+	    var init = function init(defaults, is_logged_in) {
+	        $.extend(default_calls, defaults);
+	        client_is_logged_in = is_logged_in;
 	        connect();
 	    };
 	
@@ -19881,22 +19741,29 @@
 	        return !socket || socket.readyState === 2 || socket.readyState === 3;
 	    };
 	
-	    var send = function send(data, callback, subscribe) {
-	        if (typeof callback === 'function') {
-	            var msg_type = Object.keys(priority_requests).concat(no_duplicate_requests).find(function (c) {
-	                return c in data;
-	            });
+	    var send = function send(data, force_send) {
+	        var promise_obj = new PromiseClass();
+	        var msg_type = no_duplicate_requests.find(function (c) {
+	            return c in data;
+	        });
+	
+	        if (!force_send) {
 	            var exist_in_state = State.get(['response', msg_type]);
 	            if (exist_in_state) {
-	                callback(exist_in_state);
-	                return;
+	                promise_obj.resolve(exist_in_state);
+	                return promise_obj.promise;
 	            }
-	            registered_callbacks[++req_id] = {
-	                callback: callback,
-	                subscribe: subscribe
-	            };
-	            data.req_id = req_id;
 	        }
+	
+	        registered_callbacks[++req_id] = {
+	            callback: function callback(response) {
+	                promise_obj.resolve(response);
+	            },
+	            subscribe: !!data.subscribe
+	        };
+	
+	        data.req_id = req_id;
+	
 	        if (isReady()) {
 	            socket.send(JSON.stringify(data));
 	        } else {
@@ -19905,19 +19772,85 @@
 	                connect();
 	            }
 	        }
+	
+	        return promise_obj.promise;
+	    };
+	
+	    var waiting_list = {
+	        items: {},
+	        add: function add(msg_type, promise_obj) {
+	            if (!waiting_list.items[msg_type]) {
+	                waiting_list.items[msg_type] = [];
+	            }
+	            waiting_list.items[msg_type].push(promise_obj);
+	        },
+	        resolve: function resolve(response) {
+	            var msg_type = response.msg_type;
+	            var promises = waiting_list.items[msg_type];
+	            if (promises && promises.length) {
+	                promises.forEach(function (pr) {
+	                    if (!waiting_list.another_exists(pr, msg_type)) {
+	                        pr.resolve(response);
+	                    }
+	                });
+	                waiting_list.items[msg_type] = [];
+	            }
+	        },
+	        another_exists: function another_exists(pr, msg_type) {
+	            return Object.keys(waiting_list.items).some(function (type) {
+	                return type !== msg_type && $.inArray(pr, waiting_list.items[type]) >= 0;
+	            });
+	        }
+	    };
+	
+	    var PromiseClass = function PromiseClass() {
+	        var _this = this;
+	
+	        _classCallCheck(this, PromiseClass);
+	
+	        this.promise = new Promise(function (resolve, reject) {
+	            _this.reject = reject;
+	            _this.resolve = resolve;
+	        });
+	    };
+	
+	    var wait = function wait() {
+	        for (var _len = arguments.length, msg_types = Array(_len), _key = 0; _key < _len; _key++) {
+	            msg_types[_key] = arguments[_key];
+	        }
+	
+	        var promise_obj = new PromiseClass();
+	        var is_resolved = true;
+	        msg_types.forEach(function (msg_type) {
+	            var prev_response = State.get(['response', msg_type]);
+	            if (!prev_response) {
+	                if (msg_type !== 'authorize' || client_is_logged_in) {
+	                    waiting_list.add(msg_type, promise_obj);
+	                    is_resolved = false;
+	                }
+	            } else if (msg_types.length === 1) {
+	                promise_obj.resolve(prev_response);
+	            }
+	        });
+	        if (is_resolved) {
+	            promise_obj.resolve();
+	        }
+	        return promise_obj.promise;
 	    };
 	
 	    var onClose = function onClose() {
-	        _promise = undefined;
 	        clearTimeout(keep_alive_timeout);
 	    };
 	
 	    var onOpen = function onOpen() {
-	        if (typeof message_callback === 'function') {
-	            message_callback();
-	        }
 	        if (isReady()) {
-	            _promise.then(function () {
+	            var token = Cookies.get('token');
+	            if (token) {
+	                send({ authorize: token });
+	            }
+	            send({ website_status: 1 });
+	
+	            wait('authorize').then(function () {
 	                while (buffered.length > 0) {
 	                    send(buffered.shift());
 	                }
@@ -19928,25 +19861,29 @@
 	    var onMessage = function onMessage(message) {
 	        var response = JSON.parse(message.data);
 	        State.set(['response', response.msg_type], response);
+	        if (typeof default_calls[response.msg_type] === 'function') {
+	            default_calls[response.msg_type](response);
+	        }
 	        var this_req_id = response.req_id;
 	        var reg = this_req_id ? registered_callbacks[this_req_id] : null;
+	
+	        // keep alive
+	        clearTimeout(keep_alive_timeout);
+	        keep_alive_timeout = setTimeout(function () {
+	            send({ ping: 1 });
+	        }, 60000);
 	
 	        if (reg && typeof reg.callback === 'function') {
 	            reg.callback(response);
 	            if (!reg.subscribe) {
 	                delete registered_callbacks[this_req_id];
 	            }
-	        } else if (typeof message_callback === 'function') {
-	            message_callback(response);
 	        }
+	
+	        waiting_list.resolve(response);
 	    };
 	
 	    var connect = function connect() {
-	        initPromise();
-	        Object.keys(priority_requests).forEach(function (key) {
-	            priority_requests[key] = false;
-	        });
-	
 	        socket = new WebSocket(getSocketURL());
 	        socket.onopen = onOpen;
 	        socket.onclose = onClose;
@@ -19956,28 +19893,33 @@
 	    return {
 	        init: init,
 	        send: send,
+	        wait: wait,
 	        getAppId: getAppId,
-	        getServer: getServer,
-	        promise: function promise() {
-	            return _promise;
-	        }
+	        getServer: getServer
 	    };
 	}();
 	
 	module.exports = ChampionSocket;
 
 /***/ },
-/* 311 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Client = __webpack_require__(301);
-	var Utility = __webpack_require__(307);
-	var formatMoney = __webpack_require__(312).formatMoney;
+	var ChampionSocket = __webpack_require__(308);
+	var Utility = __webpack_require__(306);
+	var formatMoney = __webpack_require__(310).formatMoney;
 	
 	var Header = function () {
 	    'use strict';
+	
+	    var init = function init() {
+	        ChampionSocket.wait('authorize').then(function () {
+	            userMenu();
+	        });
+	    };
 	
 	    var userMenu = function userMenu() {
 	        if (!Client.is_logged_in()) {
@@ -20058,7 +20000,7 @@
 	    };
 	
 	    return {
-	        userMenu: userMenu,
+	        init: init,
 	        updateBalance: updateBalance
 	    };
 	}();
@@ -20066,12 +20008,12 @@
 	module.exports = Header;
 
 /***/ },
-/* 312 */
+/* 310 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var addComma = __webpack_require__(307).addComma;
+	var addComma = __webpack_require__(306).addComma;
 	var getLanguage = __webpack_require__(305).getLanguage;
 	var State = __webpack_require__(302).State;
 	
@@ -20113,6 +20055,139 @@
 	module.exports = {
 	    formatMoney: formatMoney
 	};
+
+/***/ },
+/* 311 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var isEmptyObject = __webpack_require__(306).isEmptyObject;
+	var getLanguage = __webpack_require__(305).getLanguage;
+	var Client = __webpack_require__(301);
+	var url_for = __webpack_require__(304).url_for;
+	var default_redirect_url = __webpack_require__(304).default_redirect_url;
+	var Cookies = __webpack_require__(303);
+	
+	var LoggedIn = function () {
+	    'use strict';
+	
+	    var load = function load() {
+	        var tokens = storeTokens();
+	        var loginid = Cookies.get('loginid'),
+	            redirect_url = void 0;
+	
+	        if (!loginid) {
+	            (function () {
+	                // redirected to another domain (e.g. github.io) so those cookie are not accessible here
+	                var loginids = Object.keys(tokens);
+	                var loginid_list = '';
+	                loginids.map(function (id) {
+	                    loginid_list += '' + (loginid_list ? '+' : '') + id + ':' + (/^V/i.test(id) ? 'V' : 'R') + ':E'; // since there is not any data source to check, so assume all are enabled, disabled accounts will be handled on authorize
+	                });
+	                loginid = loginids[0];
+	                // set cookies
+	                Client.set_cookie('loginid', loginid);
+	                Client.set_cookie('loginid_list', loginid_list);
+	            })();
+	        }
+	        Client.set_cookie('token', tokens[loginid]);
+	
+	        // redirect url
+	        redirect_url = sessionStorage.getItem('redirect_url');
+	        sessionStorage.removeItem('redirect_url');
+	
+	        // redirect back
+	        var set_default = true;
+	        if (redirect_url) {
+	            var do_not_redirect = ['reset-password', 'lost-password', 'change-password', 'home'];
+	            var reg = new RegExp(do_not_redirect.join('|'), 'i');
+	            if (!reg.test(redirect_url) && url_for('') !== redirect_url) {
+	                set_default = false;
+	            }
+	        }
+	        if (set_default) {
+	            redirect_url = default_redirect_url();
+	            var lang_cookie = Cookies.get('language');
+	            var language = getLanguage();
+	            if (lang_cookie && lang_cookie !== language) {
+	                redirect_url = redirect_url.replace(new RegExp('/' + language + '/', 'i'), '/' + lang_cookie.toLowerCase() + '/');
+	            }
+	        }
+	        document.getElementById('loading_link').setAttribute('href', redirect_url);
+	        window.location.href = redirect_url;
+	    };
+	
+	    var storeTokens = function storeTokens() {
+	        // Parse hash for loginids and tokens returned by OAuth
+	        var hash = (/acct1/i.test(window.location.hash) ? window.location.hash : window.location.search).substr(1).split('&');
+	        var tokens = {};
+	        for (var i = 0; i < hash.length; i += 2) {
+	            var loginid = getHashValue(hash[i], 'acct');
+	            var token = getHashValue(hash[i + 1], 'token');
+	            if (loginid && token) {
+	                tokens[loginid] = token;
+	            }
+	        }
+	        if (!isEmptyObject(tokens)) {
+	            Client.set('tokens', JSON.stringify(tokens));
+	        }
+	        return tokens;
+	    };
+	
+	    var getHashValue = function getHashValue(source, key) {
+	        var match = new RegExp('^' + key);
+	        return source && source.length > 0 ? match.test(source.split('=')[0]) ? source.split('=')[1] : '' : '';
+	    };
+	
+	    return {
+	        load: load
+	    };
+	}();
+	
+	module.exports = LoggedIn;
+
+/***/ },
+/* 312 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var getAppId = __webpack_require__(308).getAppId;
+	var getLanguage = __webpack_require__(305).getLanguage;
+	var Client = __webpack_require__(301);
+	
+	var Login = function () {
+	    'use strict';
+	
+	    var redirect_to_login = function redirect_to_login() {
+	        if (!Client.is_logged_in() && !is_login_pages()) {
+	            try {
+	                sessionStorage.setItem('redirect_url', window.location.href);
+	            } catch (e) {
+	                console.error('The website needs features which are not enabled on private mode browsing. Please use normal mode.');
+	            }
+	            window.location.href = login_url();
+	        }
+	    };
+	
+	    var login_url = function login_url() {
+	        var server_url = localStorage.getItem('config.server_url');
+	        return server_url && /qa/.test(server_url) ? 'https://www.' + server_url.split('.')[1] + '.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage() : 'https://oauth.champion-fx.com/oauth2/authorize?app_id=' + getAppId() + '&l=' + getLanguage();
+	    };
+	
+	    var is_login_pages = function is_login_pages() {
+	        return (/logged_inws|oauth2/.test(document.URL)
+	        );
+	    };
+	
+	    return {
+	        redirect_to_login: redirect_to_login,
+	        login_url: login_url
+	    };
+	}();
+	
+	module.exports = Login;
 
 /***/ },
 /* 313 */
@@ -20314,7 +20389,7 @@
 
 	'use strict';
 	
-	__webpack_require__(308);
+	__webpack_require__(307);
 	var Client = __webpack_require__(301);
 	
 	var BinaryOptions = function () {
@@ -20351,8 +20426,8 @@
 
 	'use strict';
 	
-	var getAppId = __webpack_require__(310).getAppId;
-	var getServer = __webpack_require__(310).getServer;
+	var getAppId = __webpack_require__(308).getAppId;
+	var getServer = __webpack_require__(308).getServer;
 	
 	var ChampionEndpoint = function () {
 	    'use strict';
@@ -20416,7 +20491,7 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var ChampionRouter = __webpack_require__(313);
 	var url_for = __webpack_require__(304).url_for;
 	var Validation = __webpack_require__(317);
@@ -20477,7 +20552,7 @@
 	            ChampionSocket.send({
 	                verify_email: $input.val(),
 	                type: 'account_opening'
-	            }, function (response) {
+	            }).then(function (response) {
 	                if (response.verify_email) {
 	                    ChampionRouter.forward(url_for('new-account/virtual'));
 	                } else if (response.error) {
@@ -20716,10 +20791,10 @@
 	'use strict';
 	
 	var moment = __webpack_require__(319);
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
 	var State = __webpack_require__(302).State;
-	var Utility = __webpack_require__(307);
+	var Utility = __webpack_require__(306);
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
 	var Validation = __webpack_require__(317);
 	var DatePicker = __webpack_require__(430).DatePicker;
@@ -20758,21 +20833,19 @@
 	    };
 	
 	    var load = function load() {
-	        ChampionSocket.promise().then(function () {
-	            if (!Client.is_logged_in() || Client.has_real()) {
-	                window.location.href = default_redirect_url();
-	                return;
-	            }
+	        if (Client.has_real()) {
+	            window.location.href = default_redirect_url();
+	            return;
+	        }
 	
-	            container = $('#champion-container');
-	            client_residence = Client.get('residence');
-	            populateResidence();
-	            populateState();
-	            attachDatePicker();
+	        container = $('#champion-container');
+	        client_residence = Client.get('residence');
+	        populateResidence();
+	        populateState();
+	        attachDatePicker();
 	
-	            btn_submit = container.find(fields.btn_submit);
-	            btn_submit.on('click dblclick', submit);
-	        });
+	        btn_submit = container.find(fields.btn_submit);
+	        btn_submit.on('click dblclick', submit);
 	    };
 	
 	    var unload = function unload() {
@@ -20792,7 +20865,7 @@
 	            Utility.dropDownFromObject(ddl_residence, residences, client_residence);
 	        };
 	        if (!residences) {
-	            ChampionSocket.send({ residence_list: 1 }, function (response) {
+	            ChampionSocket.send({ residence_list: 1 }).then(function (response) {
 	                residences = response.residence_list;
 	                renderResidence();
 	            });
@@ -20813,7 +20886,7 @@
 	            initValidation();
 	        };
 	        if (!states) {
-	            ChampionSocket.send({ states_list: client_residence }, function (response) {
+	            ChampionSocket.send({ states_list: client_residence }).then(function (response) {
 	                states = response.states_list;
 	                renderState();
 	            });
@@ -20855,7 +20928,7 @@
 	                secret_question: $(fields.ddl_secret_question).val(),
 	                secret_answer: $(fields.txt_secret_answer).val()
 	            };
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-create-account').removeClass('hidden').text(response.error.message);
 	                    btn_submit.removeAttr('disabled');
@@ -35783,7 +35856,7 @@
 	'use strict';
 	
 	var moment = __webpack_require__(319);
-	var Utility = __webpack_require__(307);
+	var Utility = __webpack_require__(306);
 	
 	var DatePicker = function DatePicker(component_selector, select_type) {
 	    this.component_selector = component_selector;
@@ -35934,10 +36007,10 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
 	var State = __webpack_require__(302).State;
-	var Utility = __webpack_require__(307);
+	var Utility = __webpack_require__(306);
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
 	var Validation = __webpack_require__(317);
 	
@@ -35978,7 +36051,7 @@
 	            Utility.dropDownFromObject(ddl_residence, residences);
 	        };
 	        if (!residences) {
-	            ChampionSocket.send({ residence_list: 1 }, function (response) {
+	            ChampionSocket.send({ residence_list: 1 }).then(function (response) {
 	                residences = response.residence_list;
 	                renderResidence();
 	            });
@@ -36003,7 +36076,7 @@
 	                client_password: $(fields.txt_password).val(),
 	                residence: $(fields.ddl_residence).val()
 	            };
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-create-account').removeClass('hidden').text(response.error.message);
 	                    btn_submit.removeAttr('disabled');
@@ -36032,7 +36105,7 @@
 	
 	var Client = __webpack_require__(301);
 	var Validation = __webpack_require__(317);
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var url_for = __webpack_require__(304).url_for;
 	
 	var LostPassword = function () {
@@ -36068,7 +36141,7 @@
 	                verify_email: $(fields.txt_email).val(),
 	                type: 'reset_password'
 	            };
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-lost-password').removeClass('invisible').text(response.error.message);
 	                } else {
@@ -36094,10 +36167,10 @@
 	
 	var Client = __webpack_require__(301);
 	var Validation = __webpack_require__(317);
-	var ChampionSocket = __webpack_require__(310);
-	var Login = __webpack_require__(309);
+	var ChampionSocket = __webpack_require__(308);
+	var Login = __webpack_require__(312);
 	var DatePicker = __webpack_require__(430).DatePicker;
-	var Utility = __webpack_require__(307);
+	var Utility = __webpack_require__(306);
 	var moment = __webpack_require__(319);
 	
 	var ResetPassword = function () {
@@ -36147,7 +36220,7 @@
 	            if (real_acc.is(':checked')) {
 	                data.date_of_birth = $(fields.txt_birth_date).val();
 	            }
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                btn_submit.prop('disabled', true);
 	                $(form_selector).addClass(hiddenClass);
 	                if (response.error) {
@@ -36204,28 +36277,26 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
 	
 	var Cashier = function () {
 	    'use strict';
 	
-	    var cashierContainer = void 0;
-	
 	    var hidden_class = 'hidden';
 	
 	    var load = function load() {
-	        cashierContainer = $('.fx-cashier');
+	        var container = $('.fx-cashier');
 	
 	        if (Client.is_logged_in()) {
-	            ChampionSocket.promise().then(function () {
+	            ChampionSocket.wait('authorize').then(function () {
 	                if (Client.is_virtual()) {
-	                    cashierContainer.find('.fx-virtual').removeClass(hidden_class);
+	                    container.find('.fx-virtual').removeClass(hidden_class);
 	                    if (Client.get('balance') > 1000) {
 	                        $('#VRT_topup_link').prop('href', 'javascript;:').addClass('button-disabled');
 	                    }
 	                } else {
-	                    cashierContainer.find('.fx-real').removeClass(hidden_class);
+	                    container.find('.fx-real').removeClass(hidden_class);
 	                }
 	            });
 	        }
@@ -36246,10 +36317,8 @@
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var ChampionSocket = __webpack_require__(310);
-	var Client = __webpack_require__(301);
+	var ChampionSocket = __webpack_require__(308);
 	var Validation = __webpack_require__(317);
-	var Login = __webpack_require__(309);
 	
 	var CashierPassword = function () {
 	    'use strict';
@@ -36273,44 +36342,16 @@
 	    };
 	
 	    var load = function load() {
-	        if (!Client.is_logged_in()) {
-	            renderView(views.logged_out);
-	        } else {
-	            ChampionSocket.promise().then(function () {
-	                if (Client.is_virtual()) {
-	                    renderView(views.virtual);
-	                } else {
-	                    checkCashierState();
-	                }
-	            });
-	        }
-	    };
-	
-	    var checkCashierState = function checkCashierState() {
-	        ChampionSocket.send({ cashier_password: 1 }, function (response) {
+	        ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
 	            if (response.error) return;
 	            if (response.cashier_password === 1) {
 	                form_type = views.unlock_cashier;
 	            } else {
 	                form_type = views.lock_cashier;
 	            }
-	            renderView(views.real, form_type);
+	            $('#form_' + form_type + '_cashier').show();
 	            initForm(form_type);
 	        });
-	    };
-	
-	    var renderView = function renderView(view, form) {
-	        var $form = $('#form_' + form + '_cashier');
-	
-	        if (view === views.logged_out) {
-	            $('#client_message').show().find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
-	                Login.redirect_to_login();
-	            });
-	        } else if (view === views.virtual) {
-	            $('#client_message').show().find('.notice-msg').html('This feature is not relevant to virtual-money accounts.');
-	        } else if (view === views.real) {
-	            $form.show();
-	        }
 	    };
 	
 	    var initForm = function initForm(form) {
@@ -36347,7 +36388,7 @@
 	                cashier_password: 1
 	            }, req_key, req_val);
 	
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-cashier-password').removeClass('hidden').text(response.error.message);
 	                } else {
@@ -36372,29 +36413,23 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
 	
 	var CashierPaymentMethods = function () {
 	    'use strict';
 	
-	    var paymentMethodsContainer = void 0;
-	
 	    var hidden_class = 'hidden';
 	
 	    var load = function load() {
-	        paymentMethodsContainer = $('.fx-payment-methods');
-	
-	        if (!Client.is_logged_in()) {
-	            paymentMethodsContainer.find('#btn-open-account').removeClass(hidden_class);
-	        } else {
-	            ChampionSocket.promise().then(function () {
-	                if (!Client.is_virtual()) {
-	                    paymentMethodsContainer.find('#btn-deposit').removeClass(hidden_class);
-	                    paymentMethodsContainer.find('#btn-withdraw').removeClass(hidden_class);
-	                }
-	            });
-	        }
+	        ChampionSocket.wait('authorize').then(function () {
+	            var container = $('.fx-payment-methods');
+	            if (!Client.is_logged_in()) {
+	                container.find('#btn-open-account').removeClass(hidden_class);
+	            } else if (!Client.is_virtual()) {
+	                container.find('#btn-deposit, #btn-withdraw').removeClass(hidden_class);
+	            }
+	        });
 	    };
 	
 	    return {
@@ -36410,9 +36445,8 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
-	var Login = __webpack_require__(309);
 	
 	var CashierTopUpVirtual = function () {
 	    'use strict';
@@ -36428,26 +36462,14 @@
 	        viewError = topUpContainer.find('#viewError');
 	        viewSuccess = topUpContainer.find('#viewSuccess');
 	
-	        if (!Client.is_logged_in()) {
-	            viewError.removeClass(hidden_class).find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
-	                Login.redirect_to_login();
-	            });
-	        } else {
-	            ChampionSocket.promise().then(function () {
-	                if (Client.is_virtual()) {
-	                    top_up_virtual();
-	                } else {
-	                    viewError.removeClass(hidden_class).find('.notice-msg').text('Sorry, this feature is available to virtual accounts only.');
-	                }
-	            });
-	        }
+	        top_up_virtual();
 	    };
 	
 	    var top_up_virtual = function top_up_virtual() {
 	        var data = {
 	            topup_virtual: '1'
 	        };
-	        ChampionSocket.send(data, function (response) {
+	        ChampionSocket.send(data).then(function (response) {
 	            if (response.error) {
 	                viewError.removeClass(hidden_class).find('.notice-msg').text(response.error.message);
 	            } else {
@@ -36470,10 +36492,8 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
-	var Client = __webpack_require__(301);
+	var ChampionSocket = __webpack_require__(308);
 	var Validation = __webpack_require__(317);
-	var Login = __webpack_require__(309);
 	
 	var ChangePassword = function () {
 	    'use strict';
@@ -36492,13 +36512,6 @@
 	
 	    var load = function load() {
 	        $form = $(form_selector + ':visible');
-	        if (!Client.is_logged_in()) {
-	            $form.addClass('hidden');
-	            $('#client_message').show().find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
-	                Login.redirect_to_login();
-	            });
-	            return;
-	        }
 	        btn_submit = $form.find(fields.btn_submit);
 	        btn_submit.on('click', submit);
 	        Validation.init(form_selector, [{ selector: fields.txt_old_password, validations: ['req', 'password'] }, { selector: fields.txt_new_password, validations: ['req', 'password'] }, { selector: fields.txt_re_password, validations: ['req', ['compare', { to: fields.txt_new_password }]] }]);
@@ -36518,7 +36531,7 @@
 	                old_password: $(fields.txt_old_password).val(),
 	                new_password: $(fields.txt_new_password).val()
 	            };
-	            ChampionSocket.send(data, function (response) {
+	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-change-password').removeClass('hidden').text(response.error.message);
 	                } else {
@@ -36550,8 +36563,7 @@
 	var FinancialAssessment = __webpack_require__(441);
 	var Client = __webpack_require__(301);
 	var url_for = __webpack_require__(304).url_for;
-	var ChampionSocket = __webpack_require__(310);
-	var State = __webpack_require__(302).State;
+	var ChampionSocket = __webpack_require__(308);
 	
 	var renderRiskClassificationPopUp = function renderRiskClassificationPopUp() {
 	    if (window.location.pathname === '/user/assessment') {
@@ -36590,9 +36602,13 @@
 	};
 	
 	var checkRiskClassification = function checkRiskClassification() {
-	    ChampionSocket.promise().then(function () {
-	        if (!State.get(['response', 'get_financial_assessment', 'get_financial_assessment']) && State.get(['response', 'get_account_status', 'get_account_status', 'risk_classification']) === 'high' && Client.is_logged_in() && !Client.is_virtual()) {
-	            renderRiskClassificationPopUp();
+	    ChampionSocket.wait('get_account_status').then(function (response_account_status) {
+	        if (response_account_status.get_account_status && response_account_status.get_account_status.risk_classification === 'high') {
+	            ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial_assessment) {
+	                if (!response_financial_assessment.get_financial_assessment && !Client.is_virtual()) {
+	                    renderRiskClassificationPopUp();
+	                }
+	            });
 	        }
 	    });
 	};
@@ -36641,9 +36657,8 @@
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var showLoadingImage = __webpack_require__(307).showLoadingImage;
-	var Client = __webpack_require__(301);
-	var ChampionSocket = __webpack_require__(310);
+	var showLoadingImage = __webpack_require__(306).showLoadingImage;
+	var ChampionSocket = __webpack_require__(308);
 	var Validation = __webpack_require__(317);
 	var State = __webpack_require__(302).State;
 	var url_for = __webpack_require__(304).url_for;
@@ -36659,17 +36674,14 @@
 	
 	    var load = function load() {
 	        showLoadingImage($('<div/>', { id: 'loading', class: 'center-text' }).insertAfter('#heading'));
-	        if (checkIsVirtual()) return;
 	        $(form_selector).on('submit', function (event) {
 	            event.preventDefault();
 	            submitForm();
 	            return false;
 	        });
-	        ChampionSocket.promise().then(function () {
-	            if (checkIsVirtual()) return;
-	            ChampionSocket.send({ get_financial_assessment: 1 }, function (response) {
-	                handleForm(response);
-	            });
+	
+	        ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response) {
+	            handleForm(response);
 	        });
 	    };
 	
@@ -36718,7 +36730,7 @@
 	                $('#assessment_form').find('select').each(function () {
 	                    financial_assessment[$(this).attr('id')] = data[$(this).attr('id')] = $(this).val();
 	                });
-	                ChampionSocket.send(data, function (response) {
+	                ChampionSocket.send(data).then(function (response) {
 	                    $('#submit').removeAttr('disabled');
 	                    if ('error' in response) {
 	                        showFormMessage('Sorry, an error occurred while processing your request.', false);
@@ -36745,16 +36757,6 @@
 	        if (show_form) {
 	            $('#assessment_form').removeClass('invisible');
 	        }
-	    };
-	
-	    var checkIsVirtual = function checkIsVirtual() {
-	        if (Client.is_virtual()) {
-	            $('#assessment_form').addClass('invisible');
-	            $('#response_on_success').addClass('notice-msg center-text').removeClass('invisible').text('This feature is not relevant to virtual-money accounts.');
-	            hideLoadingImg(false);
-	            return true;
-	        }
-	        return false;
 	    };
 	
 	    var showFormMessage = function showFormMessage(msg, isSuccess) {
@@ -36786,8 +36788,7 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
-	var Client = __webpack_require__(301);
+	var ChampionSocket = __webpack_require__(308);
 	var Validation = __webpack_require__(317);
 	var MetaTraderConfig = __webpack_require__(443);
 	var MetaTraderUI = __webpack_require__(444);
@@ -36800,19 +36801,12 @@
 	    var fields = MetaTraderConfig.fields;
 	
 	    var load = function load() {
-	        if (!Client.is_logged_in()) {
-	            MetaTraderUI.displayLoginMessage();
-	            return;
-	        }
-	
-	        ChampionSocket.promise().then(function () {
-	            getAllAccountsInfo();
-	        });
+	        getAllAccountsInfo();
 	        MetaTraderUI.init(submit);
 	    };
 	
 	    var getAllAccountsInfo = function getAllAccountsInfo() {
-	        ChampionSocket.send({ mt5_login_list: 1 }, function (response) {
+	        ChampionSocket.send({ mt5_login_list: 1 }).then(function (response) {
 	            if (response.mt5_login_list && response.mt5_login_list.length > 0) {
 	                response.mt5_login_list.map(function (obj) {
 	                    var acc_type = getAccountType(obj.group);
@@ -36837,7 +36831,7 @@
 	        ChampionSocket.send({
 	            mt5_get_settings: 1,
 	            login: login
-	        }, function (response) {
+	        }).then(function (response) {
 	            if (response.mt5_get_settings) {
 	                types_info[acc_type].account_info = response.mt5_get_settings;
 	                MetaTraderUI.updateAccount(acc_type);
@@ -36884,7 +36878,7 @@
 	                }
 	
 	                var req = makeRequestObject(acc_type, action);
-	                ChampionSocket.send(req, function (response) {
+	                ChampionSocket.send(req).then(function (response) {
 	                    if (response.error) {
 	                        MetaTraderUI.displayFormMessage(response.error.message);
 	                        MetaTraderUI.enableButton();
@@ -36911,11 +36905,11 @@
 
 	'use strict';
 	
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
-	var formatMoney = __webpack_require__(312).formatMoney;
+	var formatMoney = __webpack_require__(310).formatMoney;
 	var url_for = __webpack_require__(304).url_for;
-	var isEmptyObject = __webpack_require__(307).isEmptyObject;
+	var isEmptyObject = __webpack_require__(306).isEmptyObject;
 	
 	var MetaTraderConfig = function () {
 	    'use strict';
@@ -36947,11 +36941,11 @@
 	                    } else if (Client.is_virtual()) {
 	                        resolve(needsRealMessage());
 	                    } else {
-	                        ChampionSocket.send({ get_account_status: 1 }, function (response_status) {
+	                        ChampionSocket.send({ get_account_status: 1 }).then(function (response_status) {
 	                            if ($.inArray('authenticated', response_status.get_account_status.status) === -1) {
 	                                resolve($('#msg_authenticate').html());
 	                            } else {
-	                                ChampionSocket.send({ get_financial_assessment: 1 }, function (response_financial) {
+	                                ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial) {
 	                                    if (isEmptyObject(response_financial.get_financial_assessment)) {
 	                                        resolve('To create a Financial Account for MT5, please complete the <a href="[_1]">Financial Assessment</a>.'.replace('[_1]', url_for('user/assessment')));
 	                                    } else {
@@ -37021,19 +37015,17 @@
 	                });
 	            },
 	            pre_submit: function pre_submit($form, acc_type, displayFormMessage) {
-	                return new Promise(function (resolve) {
-	                    ChampionSocket.send({
-	                        mt5_password_check: 1,
-	                        login: types_info[acc_type].account_info.login,
-	                        password: $form.find(fields.withdrawal.txt_main_pass.id).val()
-	                    }, function (response) {
-	                        if (response.error) {
-	                            displayFormMessage(response.error.message);
-	                            resolve(false);
-	                        } else if (+response.mt5_password_check === 1) {
-	                            resolve(true);
-	                        }
-	                    });
+	                return ChampionSocket.send({
+	                    mt5_password_check: 1,
+	                    login: types_info[acc_type].account_info.login,
+	                    password: $form.find(fields.withdrawal.txt_main_pass.id).val()
+	                }).then(function (response) {
+	                    if (+response.mt5_password_check === 1) {
+	                        return true;
+	                    } else if (response.error) {
+	                        displayFormMessage(response.error.message);
+	                    }
+	                    return false;
 	                });
 	            },
 	            formValues: function formValues($form, acc_type, action) {
@@ -37124,9 +37116,8 @@
 	'use strict';
 	
 	var Validation = __webpack_require__(317);
-	var formatMoney = __webpack_require__(312).formatMoney;
-	var redirect_to_login = __webpack_require__(309).redirect_to_login;
-	var showLoadingImage = __webpack_require__(307).showLoadingImage;
+	var formatMoney = __webpack_require__(310).formatMoney;
+	var showLoadingImage = __webpack_require__(306).showLoadingImage;
 	var MetaTraderConfig = __webpack_require__(443);
 	
 	var MetaTraderUI = function () {
@@ -37153,6 +37144,7 @@
 	        $action = $container.find('#fst_action');
 	        $templates = $container.find('#templates');
 	        $main_msg = $container.find('#main_msg');
+	        $container.find('#mt_loading').remove();
 	
 	        populateAccountList();
 	    };
@@ -37265,12 +37257,6 @@
 	        $.scrollTo($main_msg, 500, { offset: -10 });
 	    };
 	
-	    var displayLoginMessage = function displayLoginMessage() {
-	        $('#mt_account_management #accounts_list').removeClass('row').html($('<p/>', { class: 'center-text notice-msg', html: 'Please <a href="javascript:;">log in</a> to view this page.' })).find('a').on('click', function () {
-	            redirect_to_login();
-	        });
-	    };
-	
 	    var disableButton = function disableButton() {
 	        var $btn = _$form.find('button');
 	        if ($btn.length && !$btn.find('.barspinner').length) {
@@ -37300,7 +37286,6 @@
 	        hideFormMessage: hideFormMessage,
 	        displayFormMessage: displayFormMessage,
 	        displayMainMessage: displayMainMessage,
-	        displayLoginMessage: displayLoginMessage,
 	        disableButton: disableButton,
 	        enableButton: enableButton
 	    };
@@ -37315,7 +37300,6 @@
 	'use strict';
 	
 	var Client = __webpack_require__(301);
-	var Login = __webpack_require__(309);
 	
 	var ChampionSettings = function () {
 	    'use strict';
@@ -37325,17 +37309,11 @@
 	    var load = function load() {
 	        settingsContainer = $('.fx-settings');
 	
-	        if (!Client.is_logged_in()) {
-	            $('#client_message').show().find('.notice-msg').html('Please <a href="javascript:;">log in</a> to view this page.').find('a').on('click', function () {
-	                Login.redirect_to_login();
-	            });
-	        } else {
-	            if (!Client.is_virtual()) {
-	                settingsContainer.find('#fx-settings-content').show().find('.fx-real').show();
-	                return;
-	            }
-	            settingsContainer.find('#fx-settings-content').show();
+	        if (!Client.is_virtual()) {
+	            settingsContainer.find('#fx-settings-content').show().find('.fx-real').show();
+	            return;
 	        }
+	        settingsContainer.find('#fx-settings-content').show();
 	    };
 	
 	    return {
@@ -37351,13 +37329,12 @@
 
 	'use strict';
 	
-	var showLoadingImage = __webpack_require__(307).showLoadingImage;
-	var template = __webpack_require__(307).template;
+	var template = __webpack_require__(306).template;
 	var Client = __webpack_require__(301);
 	var url_for_static = __webpack_require__(304).url_for_static;
 	var url_for = __webpack_require__(304).url_for;
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
-	var ChampionSocket = __webpack_require__(310);
+	var ChampionSocket = __webpack_require__(308);
 	
 	var TNCApproval = function () {
 	    'use strict';
@@ -37369,26 +37346,19 @@
 	
 	    var load = function load() {
 	        hiddenClass = 'invisible';
-	        showLoadingImage($('#tnc-loading'));
 	
 	        redirectUrl = sessionStorage.getItem('tnc_redirect');
 	        sessionStorage.removeItem('tnc_redirect');
 	
-	        ChampionSocket.promise().then(function () {
-	            showTNC();
-	        });
-	
-	        $(btn_accept).on('click', function (e) {
-	            approveTNC(e);
-	        });
+	        showTNC();
 	    };
 	
 	    var approveTNC = function approveTNC(e) {
 	        e.preventDefault();
 	        e.stopPropagation();
-	        ChampionSocket.send({ tnc_approval: '1' }, function (response) {
+	        ChampionSocket.send({ tnc_approval: '1' }).then(function (response) {
 	            if (!Object.prototype.hasOwnProperty.call(response, 'error')) {
-	                redirectBack();
+	                window.location.href = redirectUrl || default_redirect_url();
 	            } else {
 	                $('#err_message').html(response.error.message).removeClass(hiddenClass);
 	            }
@@ -37396,20 +37366,15 @@
 	    };
 	
 	    var showTNC = function showTNC() {
-	        if (!Client.is_logged_in() || Client.is_virtual()) {
-	            redirectBack();
-	        }
 	        $('#tnc-loading').addClass(hiddenClass);
 	        $('#tnc_image').attr('src', url_for_static('images/protection-icon.svg'));
 	        $('#tnc_approval').removeClass(hiddenClass);
 	        var $tnc_msg = $('#tnc-message');
 	        var tnc_message = template($tnc_msg.html(), [Client.get('landing_company_fullname'), url_for('terms-and-conditions')]);
 	        $tnc_msg.html(tnc_message).removeClass(hiddenClass);
-	        $(btn_accept).text('OK');
-	    };
-	
-	    var redirectBack = function redirectBack() {
-	        window.location.href = redirectUrl || default_redirect_url();
+	        $(btn_accept).text('OK').on('click', function (e) {
+	            approveTNC(e);
+	        });
 	    };
 	
 	    var unload = function unload() {

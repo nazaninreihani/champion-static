@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/beta/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/beta/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/beta/css/flex.min.css?ttqvlijf" />
-     <link rel="stylesheet" href="/beta/css/style.min.css?ttqvlijf" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?ttqvlijf" />
-      <script src="/beta/js/bundle.min.js?ttqvlijf" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?ttqvlijf" type="text/javascript"></script>
+     <link rel="stylesheet" href="/beta/css/flex.min.css?iy2nr05e" />
+     <link rel="stylesheet" href="/beta/css/style.min.css?iy2nr05e" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?iy2nr05e" />
+      <script src="/beta/js/bundle.min.js?iy2nr05e" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?iy2nr05e" type="text/javascript"></script>
      
 </head>
 <body>
@@ -163,6 +163,13 @@
         <div class="row">
             <h1>MetaTrader account management</h1>
         </div>
+        <div id="mt_loading"><div class="barspinner dark">
+    <div class="rect1"></div>
+    <div class="rect2"></div>
+    <div class="rect3"></div>
+    <div class="rect4"></div>
+    <div class="rect5"></div>
+</div></div>
         <div id="accounts_list" class="row"></div>
 
         <div class="row">
@@ -256,7 +263,7 @@
                             <option value="50">1:50</option>
                             <option value="100" selected="selected">1:100</option>
                             <option value="200">1:200</option>
-                            <option value="200">1:300</option>
+                            <option value="300">1:300</option>
                             <option value="500">1:500</option>
                             <option value="1000">1:1000</option>
                         </select>
@@ -487,6 +494,7 @@
             </div>
         </div>
     </div>
+    <div id="end_note" class="invisible"></div>
 </footer>
 </body>
 </html>

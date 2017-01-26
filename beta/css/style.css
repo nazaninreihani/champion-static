@@ -85,30 +85,45 @@ html body #champion-container {
   .signup-box input {
     margin: 15px 0;
   }
+
+  #end_note {
+    display: none;
+  }
 }
-.fx-footer {
+#footer .fx-footer {
   display: table;
   width: 100%;
   padding: 10px 0;
   font-size: 13px;
 }
-
-#footer-menu {
+#footer #footer-menu {
   padding: 10px 0;
 }
-#footer-menu ul {
+#footer #footer-menu ul {
   margin-bottom: 10px;
   padding: 0;
 }
-
-#footer-regulatory {
+#footer #footer-regulatory {
   padding: 10px 0;
   font-size: 10px;
   text-align: justify;
 }
-
-#footer-last {
+#footer #footer-last {
   padding-top: 10px;
+  font-size: 13px;
+}
+#footer #end_note {
+  line-height: 25px;
+  text-align: center;
+  background: #C2C2C2;
+  position: fixed;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+}
+#footer #end_note, #footer #end_note a {
+  color: #000;
+  font-size: 11px;
 }
 
 .fx-panel {
