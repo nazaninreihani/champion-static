@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/css/flex.min.css?y0hpbd7y" />
-     <link rel="stylesheet" href="/css/style.min.css?y0hpbd7y" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?y0hpbd7y" />
-      <script src="/js/bundle.min.js?y0hpbd7y" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?y0hpbd7y" type="text/javascript"></script>
+     <link rel="stylesheet" href="/css/flex.min.css?wv5b8e2a" />
+     <link rel="stylesheet" href="/css/style.min.css?wv5b8e2a" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?wv5b8e2a" />
+      <script src="/js/bundle.min.js?wv5b8e2a" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?wv5b8e2a" type="text/javascript"></script>
      
 </head>
 <body>
@@ -137,7 +137,7 @@
     </div>
 </div>
 
-    <div class="fill-bg-color centered hidden" id="signup">
+    <div class="fill-bg-color center-text hidden" id="signup">
         <div class="container">
             <div class="row">
                 <div class="col-sm flex-sm-middle">
@@ -146,7 +146,7 @@
         <div class="">
             <input class="clean-input" autocomplete="off" name="email" id="email" maxlength="50" placeholder="Enter your email">
         </div>
-        <div class="">
+        <div>
             <button class="button" id="btn-verify-email" type="submit">Create Free Account</button>
         </div>
         <span class="error-msg hint color-white center-text hidden" id="signup_error"></span>
@@ -159,7 +159,13 @@
     <main class="page-content" aria-label="Content" id="champion-container">
         <div class="wrapper" id="champion-content">
             <div class="container">
-    <div id="tnc-loading"></div>
+    <div id="tnc-loading"><div class="barspinner dark">
+    <div class="rect1"></div>
+    <div class="rect2"></div>
+    <div class="rect3"></div>
+    <div class="rect4"></div>
+    <div class="rect5"></div>
+</div></div>
 
     <div class="row fx-section invisible" id="tnc_approval">
         <div class="col-xs-2">
@@ -170,7 +176,7 @@
                 <p id="tnc-message" class="invisible">
                     [_1] has updated its  <a class="pjaxload" href="[_2]">Terms & Conditions</a>. By clicking OK, you confirm that you have read and accepted the updated <a class="pjaxload" href="[_2]">Terms & Conditions</a>.
                 </p>
-                <div class="centered">
+                <div class="center-text">
                     <span class="button">
                         <button class="button" id="btn-accept"></button>
                     </span>
@@ -222,7 +228,7 @@
         </div>
     </div>
     <div id="footer-last" class="">
-        <div class="container centered">
+        <div class="container center-text">
             <div class="row">
                 <div class="col-sm">
                     &copy; 2017 Champion FX
@@ -230,6 +236,7 @@
             </div>
         </div>
     </div>
+    <div id="end_note" class="invisible"></div>
 </footer>
 </body>
 </html>

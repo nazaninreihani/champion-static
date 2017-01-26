@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/css/flex.min.css?y0hpbd7y" />
-     <link rel="stylesheet" href="/css/style.min.css?y0hpbd7y" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?y0hpbd7y" />
-      <script src="/js/bundle.min.js?y0hpbd7y" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?y0hpbd7y" type="text/javascript"></script>
+     <link rel="stylesheet" href="/css/flex.min.css?wv5b8e2a" />
+     <link rel="stylesheet" href="/css/style.min.css?wv5b8e2a" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?wv5b8e2a" />
+      <script src="/js/bundle.min.js?wv5b8e2a" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?wv5b8e2a" type="text/javascript"></script>
      
 </head>
 <body>
@@ -137,7 +137,7 @@
     </div>
 </div>
 
-    <div class="fill-bg-color centered hidden" id="signup">
+    <div class="fill-bg-color center-text hidden" id="signup">
         <div class="container">
             <div class="row">
                 <div class="col-sm flex-sm-middle">
@@ -146,7 +146,7 @@
         <div class="">
             <input class="clean-input" autocomplete="off" name="email" id="email" maxlength="50" placeholder="Enter your email">
         </div>
-        <div class="">
+        <div>
             <button class="button" id="btn-verify-email" type="submit">Create Free Account</button>
         </div>
         <span class="error-msg hint color-white center-text hidden" id="signup_error"></span>
@@ -167,7 +167,7 @@
             </div>
         </div>
 
-        <div class="errorbox rbox centered" id="client_message" style="display:none">
+        <div class="errorbox rbox center-text" id="client_message" style="display:none">
             <div class="rbox-wrap">
                 <div class="gr-12 rbox-content" id="client_message_content">
                     <p class="center notice-msg"></p>
@@ -177,6 +177,30 @@
 
         <div id="fx-settings-content" style="display: none">
             <div class="row">
+                <div class="col-xs-3">
+                    <a href="/en/user/metatrader.html">
+                        <div class="fx-md fx-mt5"></div>
+                        <h4>MetaTrader</h4>
+                    </a>
+                    <p>Manage your MetaTrader account for Forex and CFD trading.</p>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href="http://webtrader.champion-fx.com" target="_blank">
+                        <div class="fx-md fx-webtrader"></div>
+                        <h4>Webtrader</h4>
+                    </a>
+                    <p>Manage your Webtrader account for binary options trading.</p>
+                </div>
+
+                <div class="col-xs-3">
+                    <a href="/en/cashier.html">
+                        <div class="fx-md fx-manage-your-funds"></div>
+                        <h4>Manage your funds</h4>
+                    </a>
+                    <p>Deposit and withdraw funds via bank wire, credit card, or e-cash.</p>
+                </div>
+
                 <div class="col-xs-3">
                     <a href="/en/user/change-password.html">
                         <div class="fx-md fx-account-password"></div>
@@ -192,33 +216,8 @@
                     </a>
                     <p>Change the password used for deposits and withdrawals.</p>
                 </div>
-
-                <div class="col-xs-3">
-                    <a href="/en/cashier.html">
-                        <div class="fx-md fx-manage-your-funds"></div>
-                        <h4>Manage your funds</h4>
-                    </a>
-                    <p>Deposit and withdraw funds via bank wire, credit card, or e-cash.</p>
-                </div>
-
-                <div class="col-xs-3">
-                    <a href="http://webtrader.champion-fx.com/v2.1.17/main.html" target="_blank">
-                        <div class="fx-md fx-webtrader"></div>
-                        <h4>Webtrader</h4>
-                    </a>
-                    <p>Manage your Webtrader account for binary options trading.</p>
-                </div>
-
-                <div class="col-xs-3">
-                    <a href="user/metatrader" target="_blank">
-                        <div class="fx-md fx-mt5"></div>
-                        <h4>MetaTrader</h4>
-                    </a>
-                    <p>Manage your MetaTrader account for Forex and CFD trading.</p>
-                </div>
             </div>
         </div>
-
     </div>
 </div>
         </div>
@@ -262,7 +261,7 @@
         </div>
     </div>
     <div id="footer-last" class="">
-        <div class="container centered">
+        <div class="container center-text">
             <div class="row">
                 <div class="col-sm">
                     &copy; 2017 Champion FX
@@ -270,6 +269,7 @@
             </div>
         </div>
     </div>
+    <div id="end_note" class="invisible"></div>
 </footer>
 </body>
 </html>
