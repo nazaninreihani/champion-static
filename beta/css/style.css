@@ -953,6 +953,7 @@ body .top-nav-menu li a {
   font-size: 0.9rem;
   padding: 0 0 0 25px;
   line-height: 1.6em;
+  word-break: break-all;
 }
 #mt_account_management #accounts_list .acc-box > div .acc-actions {
   margin-top: 10px;

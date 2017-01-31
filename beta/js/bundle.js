@@ -20640,8 +20640,11 @@
 	        return (/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+/.test(value)
 	        );
 	    };
-	    var validGeneral = function validGeneral(value) {
+	    var validLetterSymbol = function validLetterSymbol(value) {
 	        return !/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|\d]+/.test(value);
+	    };
+	    var validGeneral = function validGeneral(value) {
+	        return !/[`~!@#$%^&*)(_=+\[}{\]\\\/";:\?><,|]+/.test(value);
 	    };
 	    var validPostCode = function validPostCode(value) {
 	        return (/^[a-zA-Z\d-]*$/.test(value)
@@ -20657,6 +20660,9 @@
 	
 	    var validCompare = function validCompare(value, options) {
 	        return value === $(options.to).val();
+	    };
+	    var validNotEqual = function validNotEqual(value, options) {
+	        return value !== $(options.to).val();
 	    };
 	    var validMin = function validMin(value, options) {
 	        return options.min ? value.trim().length >= options.min : true;
@@ -20688,11 +20694,13 @@
 	        req: { func: validRequired, message: 'This field is required' },
 	        email: { func: validEmail, message: 'Invalid email address' },
 	        password: { func: validPassword, message: 'Password should have lower and uppercase letters with numbers.' },
-	        general: { func: validGeneral, message: 'Only letters, space, hyphen, period, and apostrophe are allowed.' },
+	        general: { func: validGeneral, message: 'Only letters, numbers, space, hyphen, period, and apostrophe are allowed.' },
+	        letter_symbol: { func: validLetterSymbol, message: 'Only letters, space, hyphen, period, and apostrophe are allowed.' },
 	        postcode: { func: validPostCode, message: 'Only letters, numbers, and hyphen are allowed.' },
 	        phone: { func: validPhone, message: 'Only numbers and spaces are allowed.' },
 	        email_token: { func: validEmailToken, message: 'Please submit a valid verification token.' },
 	        compare: { func: validCompare, message: 'The two passwords that you entered do not match.' },
+	        not_equal: { func: validNotEqual, message: '[_1] and [_2] cannot be the same.' },
 	        min: { func: validMin, message: 'Minimum of [_1] characters required.' },
 	        length: { func: validLength, message: 'You should enter [_1] characters.' },
 	        number: { func: validNumber, message: '' }
@@ -20734,6 +20742,8 @@
 	                    message = message.replace('[_1]', options.min === options.max ? options.min : options.min + '-' + options.max);
 	                } else if (type === 'min') {
 	                    message = message.replace('[_1]', options.min);
+	                } else if (type === 'not_equal') {
+	                    message = message.replace('[_1]', options.name1).replace('[_2]', options.name2);
 	                }
 	                all_is_ok = false;
 	                return true;
@@ -20804,14 +20814,13 @@
 	
 	    var form_selector = '#frm_new_account_real';
 	
-	    var client_residence = void 0,
-	        residences = null,
-	        states = null;
+	    var client_residence = void 0;
 	
 	    var container = void 0,
 	        btn_submit = void 0,
 	        ddl_residence = void 0,
-	        ddl_state = void 0;
+	        ddl_state = void 0,
+	        datePickerInst = void 0;
 	
 	    var fields = {
 	        ddl_title: '#ddl_title',
@@ -20852,18 +20861,28 @@
 	        if (btn_submit) {
 	            btn_submit.off('click', submit);
 	        }
+	        if (datePickerInst) {
+	            datePickerInst.hide();
+	        }
 	    };
 	
 	    var initValidation = function initValidation() {
-	        Validation.init(form_selector, [{ selector: fields.txt_fname, validations: ['req', 'general', ['min', { min: 2 }]] }, { selector: fields.txt_lname, validations: ['req', 'general', ['min', { min: 2 }]] }, { selector: fields.txt_birth_date, validations: ['req'] }, { selector: fields.ddl_residence, validations: ['req'] }, { selector: fields.txt_address1, validations: ['req', 'general'] }, { selector: fields.txt_address2, validations: ['general'] }, { selector: fields.txt_city, validations: ['req', 'general'] }, { selector: fields.txt_state, validations: ['general'] }, { selector: fields.txt_postcode, validations: ['postcode'] }, { selector: fields.txt_phone, validations: ['req', 'phone', ['min', { min: 6 }]] }, { selector: fields.ddl_secret_question, validations: ['req'] }, { selector: fields.txt_secret_answer, validations: ['req', ['min', { min: 4 }]] }, { selector: fields.chk_tnc, validations: ['req'] }]);
+	        Validation.init(form_selector, [{ selector: fields.txt_fname, validations: ['req', 'letter_symbol', ['min', { min: 2 }]] }, { selector: fields.txt_lname, validations: ['req', 'letter_symbol', ['min', { min: 2 }]] }, { selector: fields.txt_birth_date, validations: ['req'] }, { selector: fields.ddl_residence, validations: ['req'] }, { selector: fields.txt_address1, validations: ['req', 'general'] }, { selector: fields.txt_address2, validations: ['general'] }, { selector: fields.txt_city, validations: ['req', 'letter_symbol'] }, { selector: fields.txt_state, validations: ['letter_symbol'] }, { selector: fields.txt_postcode, validations: ['postcode'] }, { selector: fields.txt_phone, validations: ['req', 'phone', ['min', { min: 6 }]] }, { selector: fields.ddl_secret_question, validations: ['req'] }, { selector: fields.txt_secret_answer, validations: ['req', ['min', { min: 4 }]] }, { selector: fields.chk_tnc, validations: ['req'] }]);
 	    };
 	
 	    var populateResidence = function populateResidence() {
 	        ddl_residence = container.find(fields.ddl_residence);
-	        residences = State.get(['response', 'residence_list']);
 	        var renderResidence = function renderResidence() {
 	            Utility.dropDownFromObject(ddl_residence, residences, client_residence);
+	            var country_obj = residences.find(function (r) {
+	                return r.value === client_residence;
+	            });
+	            if (country_obj && country_obj.phone_idd) {
+	                $(fields.txt_phone).val('+' + country_obj.phone_idd);
+	            }
 	        };
+	
+	        var residences = State.get(['response', 'residence_list', 'residence_list']);
 	        if (!residences) {
 	            ChampionSocket.send({ residence_list: 1 }).then(function (response) {
 	                residences = response.residence_list;
@@ -20876,7 +20895,6 @@
 	
 	    var populateState = function populateState() {
 	        ddl_state = container.find(fields.ddl_state);
-	        states = State.get(['response', 'states_list']);
 	        var renderState = function renderState() {
 	            if (states && states.length) {
 	                Utility.dropDownFromObject(ddl_state, states);
@@ -20885,6 +20903,8 @@
 	            }
 	            initValidation();
 	        };
+	
+	        var states = State.get(['response', 'states_list', 'states_list']);
 	        if (!states) {
 	            ChampionSocket.send({ states_list: client_residence }).then(function (response) {
 	                states = response.states_list;
@@ -20896,8 +20916,7 @@
 	    };
 	
 	    var attachDatePicker = function attachDatePicker() {
-	        var datePickerInst = new DatePicker(fields.txt_birth_date);
-	        datePickerInst.hide();
+	        datePickerInst = new DatePicker(fields.txt_birth_date);
 	        datePickerInst.show({
 	            minDate: -100 * 365,
 	            maxDate: -18 * 365 - 5,
@@ -20905,7 +20924,7 @@
 	        });
 	        $(fields.txt_birth_date).attr('data-value', Utility.toISOFormat(moment())).change(function () {
 	            return Utility.dateValueChanged(this, 'date');
-	        });
+	        }).val('');
 	    };
 	
 	    var submit = function submit(e) {
@@ -20938,6 +20957,8 @@
 	                    window.location.href = default_redirect_url();
 	                }
 	            });
+	        } else {
+	            btn_submit.removeAttr('disabled');
 	        }
 	    };
 	
@@ -36293,13 +36314,22 @@
 	                if (Client.is_virtual()) {
 	                    container.find('.fx-virtual').removeClass(hidden_class);
 	                    if (Client.get('balance') > 1000) {
-	                        $('#VRT_topup_link').prop('href', 'javascript;:').addClass('button-disabled');
+	                        disableButton($('#VRT_topup_link'));
 	                    }
 	                } else {
-	                    container.find('.fx-real').removeClass(hidden_class);
+	                    ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
+	                        if (!response.error && response.cashier_password === 1) {
+	                            disableButton($('#deposit-btn, #withdraw-btn'));
+	                        }
+	                        container.find('.fx-real').removeClass(hidden_class);
+	                    });
 	                }
 	            });
 	        }
+	    };
+	
+	    var disableButton = function disableButton($btn) {
+	        $btn.attr('href', 'javascr' + 'ipt:;').addClass('button-disabled');
 	    };
 	
 	    return {
@@ -36942,17 +36972,16 @@
 	                        resolve(needsRealMessage());
 	                    } else {
 	                        ChampionSocket.send({ get_account_status: 1 }).then(function (response_status) {
+	                            var $msg = $('#msg_authenticate').clone();
 	                            if ($.inArray('authenticated', response_status.get_account_status.status) === -1) {
-	                                resolve($('#msg_authenticate').html());
-	                            } else {
-	                                ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial) {
-	                                    if (isEmptyObject(response_financial.get_financial_assessment)) {
-	                                        resolve('To create a Financial Account for MT5, please complete the <a href="[_1]">Financial Assessment</a>.'.replace('[_1]', url_for('user/assessment')));
-	                                    } else {
-	                                        resolve();
-	                                    }
-	                                });
+	                                $msg.find('li.authenticate').removeClass('hidden');
 	                            }
+	                            ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial) {
+	                                if (isEmptyObject(response_financial.get_financial_assessment)) {
+	                                    $msg.find('li.assessment').removeClass('hidden');
+	                                }
+	                                resolve($msg.find('.checked > li:not(.hidden)').length ? $msg.html() : '');
+	                            });
 	                        });
 	                    }
 	                });
@@ -36960,9 +36989,6 @@
 	            formValues: function formValues($form, acc_type, action) {
 	                // Account type, Sub account type
 	                $form.find(fields[action].lbl_account_type.id).text(types_info[acc_type].title);
-	                if (types_info[acc_type].sub_account_type) {
-	                    $form.find(fields[action].lbl_sub_account_type.id).text(': ' + types_info[acc_type].sub_account_type);
-	                }
 	                // Email
 	                $form.find(fields[action].lbl_email.id).text(fields[action].additional_fields(acc_type).email);
 	                // Max leverage
@@ -36995,7 +37021,17 @@
 	            },
 	            prerequisites: function prerequisites() {
 	                return new Promise(function (resolve) {
-	                    return resolve(Client.is_virtual() ? needsRealMessage() : '');
+	                    if (Client.is_virtual()) {
+	                        resolve(needsRealMessage());
+	                    } else {
+	                        ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
+	                            if (!response.error && response.cashier_password === 1) {
+	                                resolve('Your cashier is locked as per your request - to unlock it, please click <a href="[_1]">here</a>.'.replace('[_1]', url_for('cashier/cashier-password')));
+	                            } else {
+	                                resolve();
+	                            }
+	                        });
+	                    }
 	                });
 	            },
 	            formValues: function formValues($form, acc_type, action) {
@@ -37093,8 +37129,8 @@
 	    };
 	
 	    var validations = {
-	        new_account: [{ selector: fields.new_account.txt_name.id, validations: ['req', 'general', ['length', { min: 2, max: 30 }]] }, { selector: fields.new_account.txt_main_pass.id, validations: ['req', 'password'] }, { selector: fields.new_account.txt_re_main_pass.id, validations: ['req', ['compare', { to: fields.new_account.txt_main_pass.id }]] }, { selector: fields.new_account.txt_investor_pass.id, validations: ['req', 'password'] }, { selector: fields.new_account.ddl_leverage.id, validations: ['req'] }, { selector: fields.new_account.chk_tnc.id, validations: ['req'] }],
-	        password_change: [{ selector: fields.password_change.txt_old_password.id, validations: ['req'] }, { selector: fields.password_change.txt_new_password.id, validations: ['req', 'password'] }, { selector: fields.password_change.txt_re_new_password.id, validations: ['req', ['compare', { to: fields.password_change.txt_new_password.id }]] }],
+	        new_account: [{ selector: fields.new_account.txt_name.id, validations: ['req', 'letter_symbol', ['length', { min: 2, max: 30 }]] }, { selector: fields.new_account.txt_main_pass.id, validations: ['req', 'password'] }, { selector: fields.new_account.txt_re_main_pass.id, validations: ['req', ['compare', { to: fields.new_account.txt_main_pass.id }]] }, { selector: fields.new_account.txt_investor_pass.id, validations: ['req', 'password', ['not_equal', { to: fields.new_account.txt_main_pass.id, name1: 'Main password', name2: 'Investor password' }]] }, { selector: fields.new_account.ddl_leverage.id, validations: ['req'] }, { selector: fields.new_account.chk_tnc.id, validations: ['req'] }],
+	        password_change: [{ selector: fields.password_change.txt_old_password.id, validations: ['req'] }, { selector: fields.password_change.txt_new_password.id, validations: ['req', 'password', ['not_equal', { to: fields.password_change.txt_old_password.id, name1: 'Current password', name2: 'New password' }]] }, { selector: fields.password_change.txt_re_new_password.id, validations: ['req', ['compare', { to: fields.password_change.txt_new_password.id }]] }],
 	        deposit: [{ selector: fields.deposit.txt_amount.id, validations: ['req', ['number', { type: 'float', min: 1, max: 20000 }]] }],
 	        withdrawal: [{ selector: fields.withdrawal.txt_main_pass.id, validations: ['req'] }, { selector: fields.withdrawal.txt_amount.id, validations: ['req', ['number', { type: 'float', min: 1, max: 20000 }]] }]
 	    };
