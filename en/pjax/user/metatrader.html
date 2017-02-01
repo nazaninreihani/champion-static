@@ -44,7 +44,7 @@
                     </div>
                     <div class="acc-info has-account row hidden">
                         <div class="col-xs-4">Login ID:</div><div data="login" class="col-xs-8"></div>
-                        <div class="col-xs-4">Name:</div><div data="name" class="col-xs-8"></div>
+                        <div class="col-xs-4">Name:</div><div data="name" class="col-xs-7"></div>
                         <div class="col-xs-4">Balance:</div><div data="balance" class="col-xs-8"></div>
                         <div class="col-xs-4">Leverage:</div><div data="leverage" class="col-xs-8"></div>
                     </div>
@@ -78,7 +78,7 @@
                         <label>Account type</label>
                     </div>
                     <div class="col-xs-8">
-                        <span id="lbl_account_type"></span> <span id="lbl_sub_account_type"></span>
+                        <span id="lbl_account_type"></span>
                     </div>
                 </div>
                 <div class="row form-row">
@@ -97,7 +97,7 @@
                         <input id="txt_name" type="text" maxlength="30" autocomplete="off" />
                     </div>
                 </div>
-                <div class="row form-row">
+                <div class="row form-row hidden">
                     <div class="col-xs-4">
                         <label for="ddl_leverage">Leverage</label>
                     </div>
@@ -278,11 +278,17 @@
 
             <div id="msg_authenticate">
                 <div class="txt-left">
-                    <p>Authenticate your Champion-FX.com account to create an MT5 Financial Account.</p>
-                    <p>Kindly email the following documents to <a href="mailto:support@champion-fx.com">support@champion-fx.com</a> to authenticate your account:</p>
-                    <ul class="bullet">
-                        <li>A scanned copy of your passport, driving licence (provisional or full), or identity card that shows your full name and date of birth.</li>
-                        <li>A scanned copy of a utility bill or bank statement that is no more than three months old.</li>
+                    <p>To create an MT5 Financial Account please:</p>
+                    <ul class="checked">
+                        <li class="authenticate hidden">
+                            Authenticate your Champion-FX.com account.
+                            <p>Kindly email the following documents to <a href="mailto:support@champion-fx.com">support@champion-fx.com</a> to authenticate your account:</p>
+                            <ul class="bullet">
+                                <li>A scanned copy of your passport, driving licence (provisional or full), or identity card that shows your full name and date of birth.</li>
+                                <li>A scanned copy of a utility bill or bank statement that is no more than three months old.</li>
+                            </ul>
+                        </li>
+                        <li class="assessment hidden">Complete the <a href="/en/user/assessment.html">Financial Assessment</a>.</li>
                     </ul>
                 </div>
             </div>
