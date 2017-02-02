@@ -37232,8 +37232,12 @@
 	
 	    var populateForm = function populateForm(e) {
 	        closeForm();
-	        var acc_type = $(e.target).parents('.acc-box').attr('id');
-	        var action = $(e.target).attr('class').match(/act_(.*)/)[1];
+	        var $target = $(e.target);
+	        if ($target.prop('tagName').toLowerCase() !== 'a') {
+	            $target = $target.parents('a');
+	        }
+	        var acc_type = $target.parents('.acc-box').attr('id');
+	        var action = $target.attr('class').match(/act_(.*)/)[1];
 	
 	        // set active
 	        $list.find('.acc-box[id!="' + acc_type + '"] > div').removeClass('active');
