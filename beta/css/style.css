@@ -577,6 +577,11 @@ a:hover {
   overflow: auto;
 }
 
+.small-spinner .barspinner {
+  height: 15px;
+  margin: 7px;
+}
+
 .fx-advisors {
   background: url("../images/symbols/advisors.svg");
 }

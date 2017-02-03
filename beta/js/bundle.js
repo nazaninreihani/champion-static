@@ -19709,7 +19709,7 @@
 	
 	    var buffered = [];
 	    var registered_callbacks = {};
-	    var no_duplicate_requests = ['authorize', 'get_settings', 'website_status', 'get_account_status', 'get_financial_assessment'];
+	    var no_duplicate_requests = ['authorize', 'get_account_status', 'get_financial_assessment', 'get_settings', 'residence_list', 'website_status'];
 	    var default_calls = {};
 	
 	    var init = function init(defaults, is_logged_in) {
@@ -19741,13 +19741,25 @@
 	        return !socket || socket.readyState === 2 || socket.readyState === 3;
 	    };
 	
+	    var PromiseClass = function PromiseClass() {
+	        var _this = this;
+	
+	        _classCallCheck(this, PromiseClass);
+	
+	        this.promise = new Promise(function (resolve, reject) {
+	            _this.reject = reject;
+	            _this.resolve = resolve;
+	        });
+	    };
+	
 	    var send = function send(data, force_send) {
-	        var promise_obj = new PromiseClass();
+	        var promise_obj = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new PromiseClass();
+	
 	        var msg_type = no_duplicate_requests.find(function (c) {
 	            return c in data;
 	        });
 	
-	        if (!force_send) {
+	        if (!force_send && msg_type) {
 	            var exist_in_state = State.get(['response', msg_type]);
 	            if (exist_in_state) {
 	                promise_obj.resolve(exist_in_state);
@@ -19767,7 +19779,7 @@
 	        if (isReady()) {
 	            socket.send(JSON.stringify(data));
 	        } else {
-	            buffered.push(data);
+	            buffered.push({ request: data, promise: promise_obj });
 	            if (isClosed()) {
 	                connect();
 	            }
@@ -19802,18 +19814,6 @@
 	            });
 	        }
 	    };
-	
-	    var PromiseClass = function PromiseClass() {
-	        var _this = this;
-	
-	        _classCallCheck(this, PromiseClass);
-	
-	        this.promise = new Promise(function (resolve, reject) {
-	            _this.reject = reject;
-	            _this.resolve = resolve;
-	        });
-	    };
-	
 	    var wait = function wait() {
 	        for (var _len = arguments.length, msg_types = Array(_len), _key = 0; _key < _len; _key++) {
 	            msg_types[_key] = arguments[_key];
@@ -19852,7 +19852,8 @@
 	
 	            wait('authorize').then(function () {
 	                while (buffered.length > 0) {
-	                    send(buffered.shift());
+	                    var req_obj = buffered.shift();
+	                    send(req_obj.request, false, req_obj.promise);
 	                }
 	            });
 	        }
@@ -20803,7 +20804,6 @@
 	var moment = __webpack_require__(319);
 	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
-	var State = __webpack_require__(302).State;
 	var Utility = __webpack_require__(306);
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
 	var Validation = __webpack_require__(317);
@@ -20818,8 +20818,6 @@
 	
 	    var container = void 0,
 	        btn_submit = void 0,
-	        ddl_residence = void 0,
-	        ddl_state = void 0,
 	        datePickerInst = void 0;
 	
 	    var fields = {
@@ -20871,48 +20869,33 @@
 	    };
 	
 	    var populateResidence = function populateResidence() {
-	        ddl_residence = container.find(fields.ddl_residence);
-	        var renderResidence = function renderResidence() {
-	            Utility.dropDownFromObject(ddl_residence, residences, client_residence);
-	            var country_obj = residences.find(function (r) {
+	        ChampionSocket.send({ residence_list: 1 }).then(function (response) {
+	            var $ddl_residence = container.find(fields.ddl_residence);
+	            Utility.dropDownFromObject($ddl_residence, response.residence_list, client_residence);
+	            container.find('#residence_loading').remove();
+	            $ddl_residence.removeClass('hidden');
+	            var country_obj = response.residence_list.find(function (r) {
 	                return r.value === client_residence;
 	            });
 	            if (country_obj && country_obj.phone_idd) {
 	                $(fields.txt_phone).val('+' + country_obj.phone_idd);
 	            }
-	        };
-	
-	        var residences = State.get(['response', 'residence_list', 'residence_list']);
-	        if (!residences) {
-	            ChampionSocket.send({ residence_list: 1 }).then(function (response) {
-	                residences = response.residence_list;
-	                renderResidence();
-	            });
-	        } else {
-	            renderResidence();
-	        }
+	        });
 	    };
 	
 	    var populateState = function populateState() {
-	        ddl_state = container.find(fields.ddl_state);
-	        var renderState = function renderState() {
+	        ChampionSocket.send({ states_list: client_residence }).then(function (response) {
+	            var $ddl_state = container.find(fields.ddl_state);
+	            var states = response.states_list;
+	            container.find('#state_loading').remove();
 	            if (states && states.length) {
-	                Utility.dropDownFromObject(ddl_state, states);
+	                Utility.dropDownFromObject($ddl_state, states);
+	                $ddl_state.removeClass('hidden');
 	            } else {
-	                ddl_state.replaceWith($('<input/>', { type: 'text', id: fields.txt_state.replace('#', ''), class: 'text', maxlength: '35' }));
+	                $ddl_state.replaceWith($('<input/>', { type: 'text', id: fields.txt_state.replace('#', ''), class: 'text', maxlength: '35' }));
 	            }
 	            initValidation();
-	        };
-	
-	        var states = State.get(['response', 'states_list', 'states_list']);
-	        if (!states) {
-	            ChampionSocket.send({ states_list: client_residence }).then(function (response) {
-	                states = response.states_list;
-	                renderState();
-	            });
-	        } else {
-	            renderState();
-	        }
+	        });
 	    };
 	
 	    var attachDatePicker = function attachDatePicker() {
@@ -36030,7 +36013,6 @@
 	
 	var ChampionSocket = __webpack_require__(308);
 	var Client = __webpack_require__(301);
-	var State = __webpack_require__(302).State;
 	var Utility = __webpack_require__(306);
 	var default_redirect_url = __webpack_require__(304).default_redirect_url;
 	var Validation = __webpack_require__(317);
@@ -36040,11 +36022,8 @@
 	
 	    var form_selector = '#frm_new_account_virtual';
 	
-	    var residences = null;
-	
 	    var container = void 0,
-	        btn_submit = void 0,
-	        ddl_residence = void 0;
+	        btn_submit = void 0;
 	
 	    var fields = {
 	        txt_verification_code: '#txt_verification_code',
@@ -36066,19 +36045,12 @@
 	    };
 	
 	    var populateResidence = function populateResidence() {
-	        ddl_residence = container.find(fields.ddl_residence);
-	        residences = State.get(['response', 'residence_list']);
-	        var renderResidence = function renderResidence() {
-	            Utility.dropDownFromObject(ddl_residence, residences);
-	        };
-	        if (!residences) {
-	            ChampionSocket.send({ residence_list: 1 }).then(function (response) {
-	                residences = response.residence_list;
-	                renderResidence();
-	            });
-	        } else {
-	            renderResidence();
-	        }
+	        ChampionSocket.send({ residence_list: 1 }).then(function (response) {
+	            var $ddl_residence = container.find(fields.ddl_residence);
+	            Utility.dropDownFromObject($ddl_residence, response.residence_list);
+	            container.find('#residence_loading').remove();
+	            $ddl_residence.removeClass('hidden');
+	        });
 	    };
 	
 	    var unload = function unload() {
