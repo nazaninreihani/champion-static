@@ -577,6 +577,11 @@ a:hover {
   overflow: auto;
 }
 
+.small-spinner .barspinner {
+  height: 15px;
+  margin: 7px;
+}
+
 .fx-advisors {
   background: url("../images/symbols/advisors.svg");
 }
@@ -921,6 +926,12 @@ body .top-nav-menu li a {
 #mt_account_management #accounts_list .acc-box > div {
   height: 100%;
   border: 1px solid #DEDEDE;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
 }
 #mt_account_management #accounts_list .acc-box > div:hover, #mt_account_management #accounts_list .acc-box > div.active {
   border-color: #C2C2C2;
@@ -956,10 +967,20 @@ body .top-nav-menu li a {
   word-break: break-all;
 }
 #mt_account_management #accounts_list .acc-box > div .acc-actions {
-  margin-top: 10px;
+  margin-top: auto;
   padding: 10px;
   border-top: 1px solid #DEDEDE;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+}
+#mt_account_management #accounts_list .acc-box > div .acc-actions a {
+  display: inline-block;
+  width: 64px;
+  text-align: center;
+  margin: 0 3px;
+}
+#mt_account_management #accounts_list .acc-box > div .acc-actions a img {
+  height: 32px;
+  margin-bottom: 7px;
 }
 #mt_account_management .fst-container {
   width: 100%;
