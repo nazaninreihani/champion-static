@@ -37205,7 +37205,7 @@
 	    var populateForm = function populateForm(e) {
 	        closeForm();
 	        var $target = $(e.target);
-	        if ($target.prop('tagName').toLowerCase() !== 'a') {
+	        if ($target.prop('tagName').toLowerCase() === 'img') {
 	            $target = $target.parents('a');
 	        }
 	        var acc_type = $target.parents('.acc-box').attr('id');
