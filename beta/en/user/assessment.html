@@ -18,11 +18,11 @@
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/beta/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/beta/images/favicons/CFX_favicon32.png" />
-     <link rel="stylesheet" href="/beta/css/flex.min.css?x0bjp46b" />
-     <link rel="stylesheet" href="/beta/css/style.min.css?x0bjp46b" />
-     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?x0bjp46b" />
-      <script src="/beta/js/bundle.min.js?x0bjp46b" type="text/javascript"></script>
-     <script src="https://style.champion-fx.com/binary.js?x0bjp46b" type="text/javascript"></script>
+     <link rel="stylesheet" href="/beta/css/flex.min.css?h3p5kkh8" />
+     <link rel="stylesheet" href="/beta/css/style.min.css?h3p5kkh8" />
+     <link rel="stylesheet" href="https://style.champion-fx.com/binary.css?h3p5kkh8" />
+      <script src="/beta/js/bundle.min.js?h3p5kkh8" type="text/javascript"></script>
+     <script src="https://style.champion-fx.com/binary.js?h3p5kkh8" type="text/javascript"></script>
      
 </head>
 <body>
@@ -160,7 +160,22 @@
         <div class="wrapper" id="champion-content">
             <div class="fx-section container">
     <h1 id="heading">Financial Assessment</h1>
-    <p class = "invisible" id="response_on_success"></p>
+    <div id="msg_success" class="invisible">
+        <p>Thank you for completing the Financial Assessment and registering your Financial Account. You can now deposit funds and trade Forex with real money on MT5.</p>
+        <div id="msg_authenticate" class="invisible">
+            <div><strong>Important</strong></div>
+            <p>Please send us the following documents in order to verify your identity and authenticate your account:</p>
+<ul class="bullet">
+    <li>Proof of identity - A scanned copy of your passport, driving license (either provisional or full), or identity card that shows your full name and date of birth.</li>
+    <li>Proof of address - A scanned copy of a utility bill or bank statement that's not more than three months old.</li>
+</ul>
+<p class="show_for_mt5 invisible">Kindly send us these documents within 5 days to keep your account active.</p>
+<p>If you have any questions, kindly contact our Customer Support team at <a href="mailto:support@champion-fx.com">support@champion-fx.com</a>.</p>
+        </div>
+        <div class="center-text">
+            <a class="button" href="/beta/en/user/metatrader.html"><span>MetaTrader account management</span></a>
+        </div>
+    </div>
     <form class="formObject invisible" id="assessment_form" name="assessment_form">
         <h1 id="heading_risk" class="invisible">Financial Assessment</h1>
         <p class="invisible" id="high_risk_classification">
@@ -444,7 +459,7 @@
             <p id="warning">The financial trading services contained within this site are only suitable for customers who are able to bear the loss of all the money they invest and who understand and have experience of the risk involved in the acquistion of financial contracts. Transactions in financial contracts carry a high degree of risk. If purchased contracts expire worthless, you will suffer a total loss of your investment, which consists of the contract premium.</p>
         </fieldset>
         <div class="center-text">
-            <div id="form_message"></div>
+            <p id="form_message" class="error-msg"></p>
         </div>
         <div class="center-text">
             <button class="button" id="submit">Update</button>
