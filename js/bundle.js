@@ -18613,8 +18613,7 @@
 	var CookieStorage = __webpack_require__(302).CookieStorage;
 	var LocalStore = __webpack_require__(302).LocalStore;
 	var State = __webpack_require__(302).State;
-	var default_redirect_url = __webpack_require__(304).default_redirect_url;
-	var url_for = __webpack_require__(304).url_for;
+	var url = __webpack_require__(304);
 	var template = __webpack_require__(306).template;
 	var ChampionSocket = __webpack_require__(308);
 	var Cookies = __webpack_require__(303);
@@ -18645,6 +18644,7 @@
 	        set('residence', Cookies.get('residence'));
 	
 	        endpoint_notification();
+	        recordAffiliateExposure();
 	    };
 	
 	    var is_logged_in = function is_logged_in() {
@@ -18654,7 +18654,7 @@
 	    var redirect_if_login = function redirect_if_login() {
 	        var client_is_logged_in = is_logged_in();
 	        if (client_is_logged_in) {
-	            window.location.href = default_redirect_url();
+	            window.location.href = url.default_redirect_url();
 	        }
 	        return client_is_logged_in;
 	    };
@@ -18718,7 +18718,7 @@
 	            terms_conditions_version = State.get(['response', 'website_status', 'website_status', 'terms_conditions_version']);
 	        if (client_tnc_status !== terms_conditions_version) {
 	            sessionStorage.setItem('tnc_redirect', window.location.href);
-	            window.location.href = url_for('user/tnc-approval');
+	            window.location.href = url.url_for('user/tnc-approval');
 	        }
 	    };
 	
@@ -18776,7 +18776,7 @@
 	        set_cookie('loginid_list', virtual_client ? client_loginid + ':V:E' : client_loginid + ':R:E+' + Cookies.get('loginid_list'));
 	        // set local storage
 	        set('loginid', client_loginid);
-	        window.location.href = default_redirect_url();
+	        window.location.href = url.default_redirect_url();
 	    };
 	
 	    var request_logout = function request_logout() {
@@ -18813,11 +18813,41 @@
 	    var endpoint_notification = function endpoint_notification() {
 	        var server = localStorage.getItem('config.server_url');
 	        if (server && server.length > 0) {
-	            var message = template('This is a staging server - For testing purposes only - The server <a href="[_1]">endpoint</a> is: [_2]', [url_for('endpoint'), server]);
+	            var message = template('This is a staging server - For testing purposes only - The server <a href="[_1]">endpoint</a> is: [_2]', [url.url_for('endpoint'), server]);
 	            var $end_note = $('#end_note');
 	            $end_note.html(message).removeClass('invisible');
 	            $('#footer').css('padding-bottom', $end_note.height() + 10);
 	        }
+	    };
+	
+	    var recordAffiliateExposure = function recordAffiliateExposure() {
+	        var is_subsidiary = /\w{1}/.test(url.get_params().s);
+	        var cookie_token = Cookies.getJSON('affiliate_tracking');
+	        if (cookie_token && cookie_token.t) {
+	            set('affiliate_token', cookie_token.t);
+	            if (is_subsidiary) {
+	                // Already exposed to some other affiliate
+	                return false;
+	            }
+	        }
+	
+	        var token = url.get_params().t;
+	        if (!token || token.length !== 32) {
+	            return false;
+	        }
+	
+	        // Record the affiliate exposure. Overwrite existing cookie, if any.
+	        var cookie_hash = {};
+	        if (token.length === 32) {
+	            cookie_hash.t = token.toString();
+	        }
+	        if (is_subsidiary) {
+	            cookie_hash.s = '1';
+	        }
+	
+	        set_cookie('affiliate_tracking', cookie_hash);
+	        set('affiliate_token', cookie_hash.t);
+	        return true;
 	    };
 	
 	    return {
@@ -19246,10 +19276,20 @@
 	    return url_for('user/settings');
 	}
 	
+	function get_params() {
+	    var urlParams = {};
+	    window.location.search.substring(1).split('&').forEach(function (pair) {
+	        var keyValue = pair.split('=');
+	        if (keyValue[0] && keyValue[1]) urlParams[keyValue[0]] = decodeURIComponent(keyValue[1]);
+	    });
+	    return urlParams;
+	}
+	
 	module.exports = {
 	    url_for: url_for,
 	    url_for_static: url_for_static,
-	    default_redirect_url: default_redirect_url
+	    default_redirect_url: default_redirect_url,
+	    get_params: get_params
 	};
 
 /***/ },
@@ -20930,6 +20970,9 @@
 	                secret_question: $(fields.ddl_secret_question).val(),
 	                secret_answer: $(fields.txt_secret_answer).val()
 	            };
+	            if (Client.get('affiliate_token')) {
+	                data.affiliate_token = Client.get('affiliate_token');
+	            }
 	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-create-account').removeClass('hidden').text(response.error.message);
@@ -36069,6 +36112,9 @@
 	                client_password: $(fields.txt_password).val(),
 	                residence: $(fields.ddl_residence).val()
 	            };
+	            if (Client.get('affiliate_token')) {
+	                data.affiliate_token = Client.get('affiliate_token');
+	            }
 	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
 	                    $('#error-create-account').removeClass('hidden').text(response.error.message);
@@ -36663,13 +36709,13 @@
 	var ChampionSocket = __webpack_require__(308);
 	var Validation = __webpack_require__(317);
 	var State = __webpack_require__(302).State;
-	var url_for = __webpack_require__(304).url_for;
 	var RiskClassification = __webpack_require__(440);
 	
 	var FinancialAssessment = function () {
 	    'use strict';
 	
 	    var form_selector = '#assessment_form';
+	    var hidden_class = 'invisible';
 	
 	    var financial_assessment = {},
 	        arr_validation = [];
@@ -36757,16 +36803,22 @@
 	            show_form = true;
 	        }
 	        if (show_form) {
-	            $('#assessment_form').removeClass('invisible');
+	            $('#assessment_form').removeClass(hidden_class);
 	        }
 	    };
 	
 	    var showFormMessage = function showFormMessage(msg, isSuccess) {
-	        $('#form_message').attr('class', isSuccess ? 'success-msg' : 'errorfield').html(isSuccess ? '<ul class="checked" style="display: inline-block;"><li>' + msg + '</li></ul>' : msg).css('display', 'block').delay(5000).fadeOut(1000);
 	        if (isSuccess) {
-	            setTimeout(function () {
-	                window.location.href = url_for('user/metatrader');
-	            }, 5000);
+	            $.scrollTo($('h1#heading'), 500, { offset: -10 });
+	            $('#assessment_form').addClass(hidden_class);
+	            $('#msg_success').removeClass(hidden_class);
+	            ChampionSocket.send({ get_account_status: 1 }).then(function (response_status) {
+	                if ($.inArray('authenticated', response_status.get_account_status.status) === -1) {
+	                    $('#msg_authenticate').removeClass(hidden_class);
+	                }
+	            });
+	        } else {
+	            $('#form_message').html(msg).delay(5000).fadeOut(1000);
 	        }
 	    };
 	
@@ -36917,21 +36969,21 @@
 	    'use strict';
 	
 	    var types_info = {
-	        demo: { account_type: 'demo', sub_account_type: '', title: 'Demo', max_leverage: 1000, is_demo: true },
-	        champion_cent: { account_type: 'financial', sub_account_type: 'cent', title: 'Real Cent', max_leverage: 1000 },
-	        champion_standard: { account_type: 'financial', sub_account_type: 'standard', title: 'Real Standard', max_leverage: 300 },
-	        champion_stp: { account_type: 'financial', sub_account_type: 'stp', title: 'Real STP', max_leverage: 100 }
+	        demo: { account_type: 'demo', mt5_account_type: '', title: 'Demo', max_leverage: 1000, is_demo: true },
+	        champion_cent: { account_type: 'financial', mt5_account_type: 'cent', title: 'Real Cent', max_leverage: 1000 },
+	        champion_standard: { account_type: 'financial', mt5_account_type: 'standard', title: 'Real Standard', max_leverage: 300 },
+	        champion_stp: { account_type: 'financial', mt5_account_type: 'stp', title: 'Real STP', max_leverage: 100 }
 	    };
 	
 	    var needsRealMessage = function needsRealMessage() {
-	        return Client.has_real() ? 'To perform this action, please switch to your [_1] Real Account.'.replace('[_1]', 'Champion-FX.com') : 'To perform this action, please <a href="[_1]"> upgrade to [_2] Real Account</a>.'.replace('[_1]', url_for('new-account/real')).replace('[_2]', 'Champion-FX.com');
+	        return $('#msg_' + (Client.has_real() ? 'switch' : 'upgrade')).html();
 	    };
 	
 	    var actions_info = {
 	        new_account: {
 	            title: 'Create Account',
 	            success_msg: function success_msg(response) {
-	                return 'Congratulations! Your [_1] Account has been created.'.replace('[_1]', types_info[response.mt5_new_account.account_type === 'financial' ? 'champion_' + response.mt5_new_account.sub_account_type : response.mt5_new_account.account_type].title);
+	                return 'Congratulations! Your [_1] Account has been created.'.replace('[_1]', types_info[response.mt5_new_account.account_type === 'financial' ? 'champion_' + response.mt5_new_account.mt5_account_type : response.mt5_new_account.account_type].title);
 	            },
 	            login: function login(response) {
 	                return response.mt5_new_account.login;
@@ -36943,17 +36995,8 @@
 	                    } else if (Client.is_virtual()) {
 	                        resolve(needsRealMessage());
 	                    } else {
-	                        ChampionSocket.send({ get_account_status: 1 }).then(function (response_status) {
-	                            var $msg = $('#msg_authenticate').clone();
-	                            if ($.inArray('authenticated', response_status.get_account_status.status) === -1) {
-	                                $msg.find('li.authenticate').removeClass('hidden');
-	                            }
-	                            ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial) {
-	                                if (isEmptyObject(response_financial.get_financial_assessment)) {
-	                                    $msg.find('li.assessment').removeClass('hidden');
-	                                }
-	                                resolve($msg.find('.checked > li:not(.hidden)').length ? $msg.html() : '');
-	                            });
+	                        ChampionSocket.send({ get_financial_assessment: 1 }).then(function (response_financial) {
+	                            resolve(isEmptyObject(response_financial.get_financial_assessment) ? $('#msg_assessment').html() : '');
 	                        });
 	                    }
 	                });
@@ -37019,7 +37062,13 @@
 	            },
 	            prerequisites: function prerequisites() {
 	                return new Promise(function (resolve) {
-	                    return resolve(Client.is_virtual() ? needsRealMessage() : '');
+	                    if (Client.is_virtual()) {
+	                        resolve(needsRealMessage());
+	                    } else {
+	                        ChampionSocket.send({ get_account_status: 1 }).then(function (response_status) {
+	                            resolve($.inArray('authenticated', response_status.get_account_status.status) === -1 ? $('#msg_authenticate').find('.show_for_mt5').removeClass('invisible').end().html() : '');
+	                        });
+	                    }
 	                });
 	            },
 	            pre_submit: function pre_submit($form, acc_type, displayFormMessage) {
@@ -37047,7 +37096,6 @@
 	    var fields = {
 	        new_account: {
 	            lbl_account_type: { id: '#lbl_account_type' },
-	            lbl_sub_account_type: { id: '#lbl_sub_account_type' },
 	            lbl_email: { id: '#lbl_email' },
 	            txt_name: { id: '#txt_name', request_field: 'name' },
 	            ddl_leverage: { id: '#ddl_leverage', request_field: 'leverage' },
@@ -37059,8 +37107,8 @@
 	                return $.extend({
 	                    account_type: types_info[acc_type].account_type,
 	                    email: Client.get('email')
-	                }, types_info[acc_type].sub_account_type ? {
-	                    sub_account_type: types_info[acc_type].sub_account_type
+	                }, types_info[acc_type].mt5_account_type ? {
+	                    mt5_account_type: types_info[acc_type].mt5_account_type
 	                } : {});
 	            }
 	        },
