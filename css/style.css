@@ -882,6 +882,14 @@ body .top-nav-menu li a {
   box-sizing: content-box;
 }
 
+.top-nav-menu > li > ul {
+  z-index: 10;
+}
+
+.top-nav-menu {
+  float: right;
+}
+
 /* stylelint-disable selector-list-comma-newline-after, selector-list-comma-space-after */
 #int_bank_wire, #local_bank_transfer, #western_union, #citadel, #visa,
 #mastercard, #cuo-credit-card, #moneybrokers, #neteller, #moneta,
@@ -1135,13 +1143,24 @@ body .top-nav-menu li a {
   float: left;
   height: 100%;
   min-height: 1px;
+  width: 100%;
+  margin: 0;
   display: none;
 }
 [dir='rtl'] .slick-slide {
   float: right;
 }
+.slick-slide ul {
+  padding: 0;
+  margin: 0;
+}
+.slick-slide ul li {
+  width: 100%;
+  margin: 0;
+}
 .slick-slide img {
   display: block;
+  width: 100%;
 }
 .slick-slide.slick-loading img {
   display: none;
@@ -1163,4 +1182,36 @@ body .top-nav-menu li a {
 
 .slick-arrow.slick-hidden {
   display: none;
+}
+
+.slick-dots {
+  right: 15px;
+  position: relative;
+  float: right;
+  margin: 0;
+}
+.slick-dots li {
+  display: inline-block;
+  padding: 0 5px;
+  line-height: 0;
+  margin: 0;
+}
+.slick-dots li button {
+  padding: 0;
+  width: 10px;
+  height: 10px;
+  font-size: 0;
+  border-radius: 100%;
+  background: #C2C2C2;
+}
+
+.fx-slider-footer {
+  position: relative;
+  padding: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.fx-slider-text {
+  padding: 30px;
 }

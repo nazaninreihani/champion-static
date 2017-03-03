@@ -20889,13 +20889,22 @@
 	            infinite: true,
 	            dots: true,
 	            arrows: false,
-	            slidesToShow: 1
+	            slidesToShow: 1,
+	            adaptiveHeight: true
 	        });
 	    };
 	    return {
 	        init: init
 	    };
 	}();
+
+	$(document).ready(function () {
+	    var height = $('.fx-slider-footer').innerHeight();
+	    setTimeout(function () {
+	        $('.fx-slider-footer').css('bottom', height);
+	        $('.slick-dots').css('bottom', height + 40);
+	    }, 10);
+	});
 
 	module.exports = Slider;
 
