@@ -503,7 +503,7 @@ fieldset {
 }
 
 .logo-parent {
-  padding: 11px 0;
+  padding: 0;
   margin: 0;
 }
 
@@ -875,7 +875,7 @@ ol ol ol ol li:before {
 }
 
 body .top-nav-menu li a {
-  padding: 30px;
+  padding: 25px;
 }
 
 .main-nav > li > ul {
@@ -888,6 +888,18 @@ body .top-nav-menu li a {
 
 .top-nav-menu {
   float: right;
+}
+
+.logo > div {
+  height: 45px;
+}
+
+.binary-logo-text > div {
+  height: 45px;
+}
+
+.logo-wrapper .logo-parent .logo, .logo-wrapper .logo-parent .logo-dark {
+  height: 45px;
 }
 
 /* stylelint-disable selector-list-comma-newline-after, selector-list-comma-space-after */
