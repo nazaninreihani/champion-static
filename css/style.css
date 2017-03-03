@@ -85,6 +85,17 @@ html body #champion-container {
   text-align: right;
 }
 
+.license-box {
+  display: inline-block;
+  margin: 20px 0;
+  padding: 10px;
+}
+.license-box div {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
 @media (max-width: 480px) {
   .signup-box input {
     margin: 15px 0;
