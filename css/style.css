@@ -69,7 +69,7 @@ html body #champion-container {
   padding: 0;
 }
 .signup-box input {
-  padding: 5px;
+  padding: 5px 15px;
   margin-right: 5px;
 }
 .signup-box span {
@@ -79,6 +79,10 @@ html body #champion-container {
 }
 .signup-box button {
   margin: 0;
+}
+
+.signup-button {
+  text-align: right;
 }
 
 @media (max-width: 480px) {
