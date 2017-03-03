@@ -20889,8 +20889,7 @@
 	            infinite: true,
 	            dots: true,
 	            arrows: false,
-	            slidesToShow: 1,
-	            adaptiveHeight: true
+	            slidesToShow: 1
 	        });
 	    };
 	    return {
