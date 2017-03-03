@@ -20897,14 +20897,16 @@
 	    };
 	}();
 
-	$(document).ready(function () {
+	var positionFooterAndDots = function positionFooterAndDots() {
 	    var height = $('.fx-slider-footer').innerHeight();
-	    setTimeout(function () {
-	        $('.fx-slider-footer').css('bottom', height);
-	        $('.slick-dots').css('bottom', height + 40);
-	    }, 10);
-	});
+	    $('.fx-slider-footer').css('bottom', height);
+	    $('.slick-dots').css('bottom', height + 40);
+	};
 
+	$(document).ready(function () {
+	    positionFooterAndDots();
+	    $(window).resize(positionFooterAndDots);
+	});
 	module.exports = Slider;
 
 /***/ },
