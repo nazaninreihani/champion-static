@@ -86,9 +86,11 @@ html body #champion-container {
 .signup-box input {
   padding: 5px 15px;
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 .signup-box span {
   display: block;
+  text-align: left;
   margin: 0;
   padding: 0;
 }
@@ -120,6 +122,10 @@ html body #champion-container {
   }
 
   #end_note {
+    display: none;
+  }
+
+  #license-box-container {
     display: none;
   }
 }
@@ -1261,7 +1267,7 @@ body .top-nav-menu li a {
   height: 10px;
   font-size: 0;
   border-radius: 100%;
-  background: #C2C2C2;
+  background: #F2F2F2;
 }
 
 .slider-footer {
@@ -1270,6 +1276,10 @@ body .top-nav-menu li a {
   padding: 10px;
   color: #fff;
   background: rgba(0, 0, 0, 0.35);
+}
+.slider-footer .row {
+  margin: 0 auto;
+  width: 100%;
 }
 
 .slider-text {
@@ -1290,5 +1300,28 @@ body .top-nav-menu li a {
 @media screen and (max-width: 796px) {
   .slider-footer {
     position: relative;
+    background: #F2F2F2;
+  }
+
+  .license-box {
+    color: #000;
+  }
+}
+@media screen and (max-width: 480px) {
+  .slider-footer {
+    position: relative;
+    background: #F2F2F2;
+  }
+
+  .license-box {
+    color: #000;
+  }
+
+  .signup-box div {
+    text-align: center;
+  }
+
+  .signup-box button {
+    margin: 0 0 15px;
   }
 }
