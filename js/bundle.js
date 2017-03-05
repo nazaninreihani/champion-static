@@ -20891,7 +20891,8 @@
 	            infinite: true,
 	            dots: true,
 	            arrows: false,
-	            slidesToShow: 1
+	            slidesToShow: 1,
+	            autoplay: true
 	        });
 	    };
 	    return {
