@@ -18523,6 +18523,7 @@
 	var MetaTrader = __webpack_require__(444);
 	var ChampionSettings = __webpack_require__(447);
 	var TNCApproval = __webpack_require__(448);
+	var CashierDepositWithdraw = __webpack_require__(449);
 
 	var Champion = function () {
 	    'use strict';
@@ -18573,6 +18574,7 @@
 	            cashier: { module: Cashier },
 	            contact: { module: ChampionContact },
 	            endpoint: { module: ChampionEndpoint },
+	            forward: { module: CashierDepositWithdraw, is_authenticated: true, only_real: true },
 	            logged_inws: { module: LoggedIn },
 	            metatrader: { module: MetaTrader, is_authenticated: true },
 	            real: { module: ChampionNewReal, is_authenticated: true, only_virtual: true },
@@ -20892,7 +20894,9 @@
 	            dots: true,
 	            arrows: false,
 	            slidesToShow: 1,
-	            autoplay: true
+	            autoplay: true,
+	            appendDots: $('#slider-dots'),
+	            lazyLoad: 'progressive'
 	        });
 	    };
 	    return {
@@ -20904,17 +20908,15 @@
 	    var height = -$('.slider-footer').innerHeight();
 	    var dotsMargin = height - 40;
 	    if (window.matchMedia('(min-width: 796px)').matches) {
-	        setTimeout(function () {
-	            /*eslint-disable */
-	            $('.slider-footer').css({
-	                transform: 'translateY(' + height + 'px)'
-	            });
-	            $('.slick-dots').css({
-	                transform: 'translateY(' + dotsMargin + 'px)'
-	            });
-	            $('.slider-text').css('margin-bottom', -height + 'px');
-	            /*eslint-enable */
-	        }, 10);
+	        /*eslint-disable */
+	        $('.slider-footer').css({
+	            transform: 'translateY(' + height + 'px)'
+	        });
+	        $('#slider-dots').css({
+	            transform: 'translateY(' + dotsMargin + 'px)'
+	        });
+	        $('.slider-text').css('margin-bottom', -height + 'px');
+	        /*eslint-enable */
 	    } else {
 	        setTimeout(function () {
 	            $('.slick-dots').css({
@@ -39055,28 +39057,27 @@
 	var Cashier = function () {
 	    'use strict';
 
-	    var hidden_class = 'hidden';
-
 	    var load = function load() {
-	        var container = $('.fx-cashier');
-
-	        if (Client.is_logged_in()) {
-	            ChampionSocket.wait('authorize').then(function () {
-	                if (Client.is_virtual()) {
-	                    container.find('.fx-virtual').removeClass(hidden_class);
-	                    if (Client.get('balance') > 1000) {
-	                        disableButton($('#VRT_topup_link'));
-	                    }
-	                } else {
-	                    ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
-	                        if (!response.error && response.cashier_password === 1) {
-	                            disableButton($('#deposit-btn, #withdraw-btn'));
-	                        }
-	                        container.find('.fx-real').removeClass(hidden_class);
-	                    });
+	        ChampionSocket.wait('authorize').then(function () {
+	            var cashierContainer = $('.fx-cashier');
+	            if (Client.is_logged_in() && Client.is_virtual()) {
+	                cashierContainer.find('#fx-virtual').removeClass('hidden');
+	                $('#deposit-btn, #withdraw-btn').addClass('hidden');
+	                if (Client.get('balance') > 1000) {
+	                    disableButton($('#VRT_topup_link'));
 	                }
-	            });
-	        }
+	            } else if (Client.is_logged_in() && !Client.is_virtual()) {
+	                cashierContainer.find('#fx-virtual').addClass('hidden');
+	                $('#deposit-btn, #withdraw-btn').removeClass('hidden');
+	                ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
+	                    if (!response.error && response.cashier_password === 1) {
+	                        disableButton($('#deposit-btn, #withdraw-btn'));
+	                    }
+	                });
+	            } else {
+	                $('#deposit-btn, #withdraw-btn').addClass('hidden');
+	            }
+	        });
 	    };
 
 	    var disableButton = function disableButton($btn) {
@@ -39200,15 +39201,18 @@
 	var CashierPaymentMethods = function () {
 	    'use strict';
 
-	    var hidden_class = 'hidden';
-
 	    var load = function load() {
 	        ChampionSocket.wait('authorize').then(function () {
 	            var container = $('.fx-payment-methods');
 	            if (!Client.is_logged_in()) {
-	                container.find('#btn-open-account').removeClass(hidden_class);
+	                container.find('#btn-open-account').removeClass('hidden');
 	            } else if (!Client.is_virtual()) {
-	                container.find('#btn-deposit, #btn-withdraw').removeClass(hidden_class);
+	                container.find('#btn-deposit, #btn-withdraw').removeClass('hidden');
+	                ChampionSocket.send({ cashier_password: 1 }).then(function (response) {
+	                    if (!response.error && response.cashier_password === 1) {
+	                        container.find('#btn-deposit, #btn-withdraw').addClass('button-disabled');
+	                    }
+	                });
 	            }
 	        });
 	    };
@@ -39232,16 +39236,13 @@
 	var CashierTopUpVirtual = function () {
 	    'use strict';
 
-	    var topUpContainer = void 0,
-	        viewError = void 0,
+	    var viewError = void 0,
 	        viewSuccess = void 0;
 
-	    var hidden_class = 'hidden';
-
 	    var load = function load() {
-	        topUpContainer = $('#topup_virtual');
-	        viewError = topUpContainer.find('#viewError');
-	        viewSuccess = topUpContainer.find('#viewSuccess');
+	        var container = $('#topup_virtual');
+	        viewError = container.find('#viewError');
+	        viewSuccess = container.find('#viewSuccess');
 
 	        top_up_virtual();
 	    };
@@ -39252,9 +39253,9 @@
 	        };
 	        ChampionSocket.send(data).then(function (response) {
 	            if (response.error) {
-	                viewError.removeClass(hidden_class).find('.notice-msg').text(response.error.message);
+	                viewError.removeClass('hidden').find('.notice-msg').text(response.error.message);
 	            } else {
-	                viewSuccess.removeClass(hidden_class).find('.notice-msg').text('[_1] [_2] has been credited to your Virtual money account [_3]', [response.topup_virtual.currency, response.topup_virtual.amount, Client.get('loginid')]);
+	                viewSuccess.removeClass('hidden').find('.notice-msg').text('[_1] [_2] has been credited to your Virtual money account [_3]', [response.topup_virtual.currency, response.topup_virtual.amount, Client.get('loginid')]);
 	            }
 	        });
 	    };
@@ -40175,6 +40176,136 @@
 	}();
 
 	module.exports = TNCApproval;
+
+/***/ },
+/* 449 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var ChampionSocket = __webpack_require__(308);
+	var url_for = __webpack_require__(304).url_for;
+	var Client = __webpack_require__(301);
+	var Validation = __webpack_require__(317);
+
+	var CashierDepositWithdraw = function () {
+	    'use strict';
+
+	    var $btn_submit = void 0,
+	        $form_withdraw = void 0,
+	        cashier_type = void 0,
+	        error_msg = void 0;
+
+	    var fields = {
+	        cashier_title: '#cashier_title',
+	        error_msg: '#error_msg',
+	        btn_submit: '#btn_submit',
+	        token: '#verification_token'
+	    };
+
+	    var load = function load() {
+	        if (/withdraw/.test(window.location.hash.substring(1))) {
+	            cashier_type = 'withdraw';
+	        } else if (/deposit/.test(window.location.hash.substring(1))) {
+	            cashier_type = 'deposit';
+	        } else {
+	            window.location.href = url_for('/cashier');
+	        }
+
+	        var $container = $('#cashier_deposit');
+	        $form_withdraw = $('#form_withdraw');
+	        error_msg = $container.find(fields.error_msg);
+
+	        $(fields.cashier_title).html(cashier_type);
+	        if (cashier_type === 'withdraw') initForm();
+
+	        ChampionSocket.send({ cashier_password: '1' }).then(function (response) {
+	            if (response.error) {
+	                error_msg.removeClass('hidden').html(response.error.message);
+	            } else if (response.cashier_password) {
+	                error_msg.removeClass('hidden').html('Your cashier is locked as per your request - to unlock it, please click <a href="[_1]">here</a>.'.replace('[_1]', url_for('/cashier/cashier-password')));
+	            } else {
+	                deposit_withdraw();
+	            }
+	        });
+	    };
+
+	    var initForm = function initForm() {
+	        var form_selector = '#form_withdraw';
+	        $btn_submit = $form_withdraw.find(fields.btn_submit);
+	        $btn_submit.on('click', submit);
+	        Validation.init(form_selector, [{ selector: fields.token, validations: ['req', 'email_token'] }]);
+	        verify_email();
+	    };
+
+	    var unload = function unload() {
+	        if ($btn_submit) {
+	            $btn_submit.off('click', submit);
+	        }
+	    };
+
+	    var verify_email = function verify_email() {
+	        $form_withdraw.removeClass('hidden');
+	        ChampionSocket.send({
+	            verify_email: Client.get('email'),
+	            type: 'payment_withdraw'
+	        });
+	    };
+
+	    var submit = function submit(e) {
+	        e.preventDefault();
+	        $form_withdraw.addClass('hidden');
+	        deposit_withdraw($(fields.token).val());
+	    };
+
+	    var deposit_withdraw = function deposit_withdraw(token) {
+	        var req = { cashier: cashier_type, provider: 'epg' };
+	        if (token) req.verification_code = token;
+
+	        ChampionSocket.send(req).then(function (response) {
+	            if (response.error) {
+	                error_msg.removeClass('hidden');
+	                switch (response.error.code) {
+	                    case 'ASK_TNC_APPROVAL':
+	                        window.location.href = url_for('user/tnc-approval');
+	                        break;
+	                    case 'ASK_FIX_DETAILS':
+	                        error_msg.html(response.error.details);
+	                        break;
+	                    case 'ASK_AUTHENTICATE':
+	                        error_msg.html('Your account is not fully authenticated.');
+	                        break;
+	                    case 'ASK_FINANCIAL_RISK_APPROVAL':
+	                        error_msg.html('Financial Risk approval is required. Please contact <a href="[_1]">customer support</a> for more information.'.replace('[_1]', url_for('/contact')));
+	                        break;
+	                    case 'ASK_CURRENCY':
+	                        // set account currency to USD if not set // TODO: remove this after currency set by default in backend
+	                        ChampionSocket.send({ set_account_currency: 'USD' }).then(function (res) {
+	                            if (res.error) {
+	                                error_msg.html(res.error.message);
+	                            } else {
+	                                deposit_withdraw();
+	                            }
+	                        });
+	                        break;
+	                    default:
+	                        error_msg.html(response.error.message);
+	                }
+	            } else {
+	                $('#error_msg').addClass('hidden');
+	                $('#' + cashier_type + '_iframe_container').removeClass('hidden').find('iframe').attr('src', response.cashier).end();
+	            }
+	        });
+	    };
+
+	    return {
+	        load: load,
+	        unload: unload,
+	        deposit_withdraw: deposit_withdraw
+	    };
+	}();
+
+	module.exports = CashierDepositWithdraw;
 
 /***/ }
 /******/ ]);
