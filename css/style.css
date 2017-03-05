@@ -1273,6 +1273,9 @@ body .top-nav-menu li a {
   width: 100%;
   height: 400px;
 }
+.slick-slide ul li h2 {
+  line-height: 1.9rem;
+}
 
 .slick-dots {
   right: 15px;
@@ -1337,16 +1340,6 @@ body .top-nav-menu li a {
   .license-box {
     color: #000;
   }
-
-  .slider-text {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-flex-direction: column;
-        -ms-flex-direction: column;
-            flex-direction: column;
-    height: 100%;
-  }
 }
 @media screen and (max-width: 480px) {
   .slider-footer {
@@ -1364,15 +1357,5 @@ body .top-nav-menu li a {
 
   .signup-box button {
     margin: 0 0 15px;
-  }
-
-  .slider-text {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-flex-direction: column;
-        -ms-flex-direction: column;
-            flex-direction: column;
-    height: 100%;
   }
 }
