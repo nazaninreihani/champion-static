@@ -1312,10 +1312,13 @@ body .top-nav-menu li a {
 }
 
 #slide-1 {
-  background: url("../images/about-2.jpg") no-repeat center center;
+  background: url("../images/img_fx_2@2x.jpg") no-repeat center center;
   background-size: cover;
   height: 400px;
   width: 100%;
+}
+#slide-1 .row {
+  margin: 0 auto;
 }
 
 #slide-2 {
