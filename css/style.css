@@ -7,6 +7,7 @@
  */
 html {
   height: 100%;
+  overflow-x: hidden;
 }
 html body {
   display: -webkit-flex;
@@ -15,11 +16,16 @@ html body {
   -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
+  overflow-x: hidden;
 }
 html body #champion-container {
   -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
+}
+
+button {
+  white-space: nowrap;
 }
 
 .topbar-container div {
@@ -1275,7 +1281,7 @@ body .top-nav-menu li a {
   width: 100%;
   padding: 10px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.65);
 }
 .slider-footer .row {
   margin: 0 auto;
