@@ -20890,7 +20890,6 @@
 	var Slider = function () {
 	    var init = function init() {
 	        $('.slider').slick({
-	            infinite: true,
 	            dots: true,
 	            arrows: false,
 	            slidesToShow: 1,
