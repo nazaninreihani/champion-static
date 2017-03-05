@@ -915,7 +915,8 @@ ol ol ol ol li:before {
 }
 
 body .top-nav-menu li a {
-  padding: 25px;
+  height: auto;
+  padding: 25px 15px;
 }
 
 .main-nav > li > ul {
@@ -1263,7 +1264,7 @@ body .top-nav-menu li a {
   background: #C2C2C2;
 }
 
-.fx-slider-footer {
+.slider-footer {
   position: absolute;
   width: 100%;
   padding: 10px;
@@ -1271,7 +1272,7 @@ body .top-nav-menu li a {
   background: rgba(0, 0, 0, 0.35);
 }
 
-.fx-slider-text {
+.slider-text {
   padding: 30px;
 }
 
