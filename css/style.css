@@ -160,7 +160,17 @@ button {
   margin-bottom: 10px;
   padding: 0;
 }
-#footer #footer-menu ul .social-network img {
+#footer #footer-menu ul.social-network {
+  text-align: right;
+  width: 100%;
+  margin: 0;
+}
+#footer #footer-menu ul.social-network li {
+  display: inline-block;
+  margin-left: 5px;
+  margin-top: 0;
+}
+#footer #footer-menu ul.social-network li img {
   width: 30px;
 }
 #footer #footer-regulatory {
