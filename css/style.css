@@ -160,6 +160,9 @@ button {
   margin-bottom: 10px;
   padding: 0;
 }
+#footer #footer-menu ul .social-network img {
+  width: 30px;
+}
 #footer #footer-regulatory {
   padding: 25px 0 0;
   font-size: 10px;
