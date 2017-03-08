@@ -27,6 +27,16 @@ html body #champion-container {
   padding-bottom: 10px;
 }
 
+.fill-primary-color {
+  background: #004385;
+}
+
+.section-title {
+  padding-bottom: 5px;
+  color: #C2C2C2;
+  border-bottom: 2px solid #DEDEDE;
+}
+
 .topbar-container div {
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
