@@ -24,6 +24,7 @@ html body #champion-container {
 
 .page-title {
   border-bottom: 1px solid #DEDEDE;
+  padding-bottom: 10px;
 }
 
 .topbar-container div {
