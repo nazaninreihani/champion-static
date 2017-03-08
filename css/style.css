@@ -22,6 +22,10 @@ html body #champion-container {
           flex: 1 1 auto;
 }
 
+.page-title {
+  border-bottom: 1px solid #DEDEDE;
+}
+
 .topbar-container div {
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
