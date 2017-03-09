@@ -37496,10 +37496,10 @@
 	var CashierDepositWithdraw = function () {
 	    'use strict';
 
-	    var $btn_submit = void 0,
-	        $form_withdraw = void 0,
+	    var error_msg = void 0,
+	        btn_submit = void 0,
 	        cashier_type = void 0,
-	        error_msg = void 0;
+	        form_withdraw = void 0;
 
 	    var fields = {
 	        cashier_title: '#cashier_title',
@@ -37517,9 +37517,9 @@
 	            window.location.href = url_for('/cashier');
 	        }
 
-	        var $container = $('#cashier_deposit');
-	        $form_withdraw = $('#form_withdraw');
-	        error_msg = $container.find(fields.error_msg);
+	        var container = $('#cashier_deposit');
+	        form_withdraw = $('#form_withdraw');
+	        error_msg = container.find(fields.error_msg);
 
 	        $(fields.cashier_title).html(cashier_type);
 	        if (cashier_type === 'withdraw') initForm();
@@ -37537,20 +37537,20 @@
 
 	    var initForm = function initForm() {
 	        var form_selector = '#form_withdraw';
-	        $btn_submit = $form_withdraw.find(fields.btn_submit);
-	        $btn_submit.on('click', submit);
+	        btn_submit = form_withdraw.find(fields.btn_submit);
+	        btn_submit.on('click', submit);
 	        Validation.init(form_selector, [{ selector: fields.token, validations: ['req', 'email_token'] }]);
 	        verify_email();
 	    };
 
 	    var unload = function unload() {
-	        if ($btn_submit) {
-	            $btn_submit.off('click', submit);
+	        if (btn_submit) {
+	            btn_submit.off('click', submit);
 	        }
 	    };
 
 	    var verify_email = function verify_email() {
-	        $form_withdraw.removeClass('hidden');
+	        form_withdraw.removeClass('hidden');
 	        ChampionSocket.send({
 	            verify_email: Client.get('email'),
 	            type: 'payment_withdraw'
@@ -37559,13 +37559,18 @@
 
 	    var submit = function submit(e) {
 	        e.preventDefault();
-	        $form_withdraw.addClass('hidden');
+	        form_withdraw.addClass('hidden');
 	        deposit_withdraw($(fields.token).val());
 	    };
 
 	    var deposit_withdraw = function deposit_withdraw(token) {
-	        var req = { cashier: cashier_type, provider: 'epg' };
-	        if (token) req.verification_code = token;
+	        var req = void 0;
+	        if (token) {
+	            req = {
+	                cashier: cashier_type,
+	                verification_code: token
+	            };
+	        } else req = { cashier: cashier_type };
 
 	        ChampionSocket.send(req).then(function (response) {
 	            if (response.error) {

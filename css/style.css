@@ -22,19 +22,6 @@ html body #champion-container {
           flex: 1 1 auto;
 }
 
-.page-title {
-  border-bottom: 1px solid #DEDEDE;
-  padding-bottom: 10px;
-}
-
-.section-title {
-  padding-bottom: 5px;
-  color: #fff;
-  border-bottom: 2px solid #DEDEDE;
-  display: inline-block;
-  width: auto;
-}
-
 .topbar-container div {
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
@@ -107,7 +94,7 @@ html body #champion-container {
   display: table;
   width: 100%;
   padding: 10px 0;
-  font-size: 10px;
+  font-size: 13px;
 }
 #footer #footer-menu {
   padding: 10px 0;
@@ -123,7 +110,7 @@ html body #champion-container {
 }
 #footer #footer-last {
   padding-top: 10px;
-  font-size: 10px;
+  font-size: 13px;
 }
 #footer #end_note {
   line-height: 25px;
@@ -136,7 +123,7 @@ html body #champion-container {
 }
 #footer #end_note, #footer #end_note a {
   color: #000;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .fx-panel {
@@ -296,7 +283,12 @@ html body #champion-container {
   margin-bottom: 10px;
 }
 
+#cs_telephone_number {
+  width: 90%;
+}
+
 #phone-result {
+  padding-left: 10px;
   text-align: left;
   margin: 20px 0;
 }
@@ -351,22 +343,6 @@ html body #champion-container {
 
 .contacts-title {
   padding-bottom: 30px;
-}
-
-#contacts-emails {
-  margin-bottom: -50px;
-  padding-bottom: 75px;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-#contacts-emails .row {
-  padding: 25px 0;
-}
-#contacts-emails .row h6, #contacts-emails .row p {
-  color: #fff;
-}
-#contacts-emails .row.emails {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .fx-tb {
