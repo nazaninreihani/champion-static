@@ -135,11 +135,7 @@ button {
     margin: 15px 0;
   }
 
-  #end_note {
-    display: none;
-  }
-
-  #license-box-container {
+  #end_note, #license-box-container {
     display: none;
   }
 }
@@ -1328,10 +1324,7 @@ body .top-nav-menu li a {
 .slider-text {
   padding: 30px;
 }
-.slider-text .container {
-  height: 100%;
-}
-.slider-text .container .row {
+.slider-text .container, .slider-text .container .row {
   height: 100%;
 }
 
