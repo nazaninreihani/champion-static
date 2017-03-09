@@ -20008,8 +20008,7 @@
 
 	    var userMenu = function userMenu() {
 	        if (!Client.is_logged_in()) {
-	            $('#main-login').removeClass('hidden');
-	            $('#main-signup').removeClass('hidden');
+	            $('#main-login, #main-signup').removeClass('hidden');
 	            return;
 	        }
 	        $('#main-logout').removeClass('hidden');
