@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-23443 -15163 50 50">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0080ff;
+        font-size: 36px;
+        font-family: Roboto-Bold, Roboto;
+        font-weight: 700;
+      }
+
+      .cls-2, .cls-4 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke: #004385;
+        stroke-width: 4px;
+      }
+
+      .cls-3 {
+        stroke: none;
+      }
+    </style>
+  </defs>
+  <g id="Group_376" data-name="Group 376" transform="translate(-23993 -16809)">
+    <text id="_" data-name="?" class="cls-1" transform="translate(566 1685)"><tspan x="0" y="0">?</tspan></text>
+    <g id="Ellipse_110" data-name="Ellipse 110" class="cls-2" transform="translate(550 1646)">
+      <circle class="cls-3" cx="25" cy="25" r="25"/>
+      <circle class="cls-4" cx="25" cy="25" r="23"/>
+    </g>
+    <line id="Line_10" data-name="Line 10" class="cls-2" x2="34" y2="34" transform="translate(558.5 1653.5)"/>
+  </g>
+</svg>
