@@ -18536,7 +18536,6 @@
 	        container.on('champion:before', beforeContentChange);
 	        container.on('champion:after', afterContentChange);
 	        Client.init();
-	        Slider.init();
 
 	        ChampionSocket.init({
 	            authorize: function authorize(response) {
@@ -18560,6 +18559,7 @@
 	    };
 
 	    var beforeContentChange = function beforeContentChange() {
+	        Slider.destroy();
 	        if (active_script) {
 	            if (typeof active_script.unload === 'function') {
 	                active_script.unload();
@@ -18598,6 +18598,8 @@
 	        Header.init();
 	        ChampionSignup.load();
 	        Utility.handleActive();
+	        Slider.init();
+
 	        ChampionSocket.wait('get_settings', 'get_account_status').then(function () {
 	            Client.check_tnc();
 	        });
@@ -20902,54 +20904,65 @@
 
 	var Slider = function () {
 	    var init = function init() {
-	        $('.slider').slick({
-	            infinite: false,
-	            dots: true,
-	            arrows: false,
-	            slidesToShow: 1,
-	            autoplay: true,
-	            appendDots: $('#slider-dots'),
-	            lazyLoad: 'progressive'
+	        $(function () {
+	            $(document).find('.slider').slick({
+	                infinite: false,
+	                dots: true,
+	                arrows: false,
+	                slidesToShow: 1,
+	                autoplay: true,
+	                appendDots: $('#slider-dots'),
+	                lazyLoad: 'progressive'
+	            });
+	            positionFooterAndDots();
 	        });
 	    };
+
+	    var destroy = function destroy() {
+	        $('#slider-dots').empty();
+	        $('.slider').slick('unslick');
+	    };
+
+	    var positionFooterAndDots = function positionFooterAndDots() {
+	        var height = -$('.slider-footer').innerHeight();
+	        var dotsMargin = height - 40;
+	        if (window.matchMedia('(min-width: 797px)').matches) {
+	            /*eslint-disable */
+	            setTimeout(function () {
+	                $('.slider-footer').css({
+	                    transform: 'translateY(' + height + 'px)'
+	                });
+	                $('#slider-dots').css({
+	                    transform: 'translateY(' + dotsMargin + 'px)'
+	                });
+	                $('.slider-text').css('height', 500 + height + 'px');
+	            }, 10);
+
+	            /*eslint-enable */
+	        } else {
+	            setTimeout(function () {
+	                $('.slider-footer').css({
+	                    transform: 'translateY(0)'
+	                });
+	                $('#slider-dots').css({
+	                    transform: 'translateY(-40px)'
+	                });
+	                $('.slider-text').css('height', '100%');
+	            });
+	        }
+	    };
+
+	    $(function () {
+	        $(window).resize(positionFooterAndDots);
+	    });
+
 	    return {
-	        init: init
+	        init: init,
+	        positionFooterAndDots: positionFooterAndDots,
+	        destroy: destroy
 	    };
 	}();
 
-	var positionFooterAndDots = function positionFooterAndDots() {
-	    var height = -$('.slider-footer').innerHeight();
-	    var dotsMargin = height - 40;
-	    if (window.matchMedia('(min-width: 797px)').matches) {
-	        /*eslint-disable */
-	        setTimeout(function () {
-	            $('.slider-footer').css({
-	                transform: 'translateY(' + height + 'px)'
-	            });
-	            $('#slider-dots').css({
-	                transform: 'translateY(' + dotsMargin + 'px)'
-	            });
-	            $('.slider-text').css('height', 500 + height + 'px');
-	        }, 10);
-
-	        /*eslint-enable */
-	    } else {
-	        setTimeout(function () {
-	            $('.slider-footer').css({
-	                transform: 'translateY(0)'
-	            });
-	            $('#slider-dots').css({
-	                transform: 'translateY(-40px)'
-	            });
-	            $('.slider-text').css('height', '100%');
-	        });
-	    }
-	};
-
-	$(function () {
-	    positionFooterAndDots();
-	    $(window).resize(positionFooterAndDots);
-	});
 	module.exports = Slider;
 
 /***/ },
