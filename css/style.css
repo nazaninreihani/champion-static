@@ -384,9 +384,6 @@ button {
 #contacts-emails-container .contacts-emails .row {
   padding: 25px 0 0;
 }
-#contacts-emails-container .contacts-emails .row h6, #contacts-emails-container .contacts-emails .row p {
-  color: #fff;
-}
 #contacts-emails-container .contacts-emails .row.emails {
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   padding: 25px 0;
