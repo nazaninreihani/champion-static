@@ -24,6 +24,19 @@ html body #champion-container {
           flex: 1 1 auto;
 }
 
+.page-title {
+  border-bottom: 1px solid #DEDEDE;
+  padding-bottom: 10px;
+}
+
+.section-title {
+  padding-bottom: 5px;
+  color: #fff;
+  border-bottom: 2px solid #DEDEDE;
+  display: inline-block;
+  width: auto;
+}
+
 button {
   white-space: nowrap;
 }
@@ -112,8 +125,16 @@ button {
   margin: 0;
 }
 
-.signup-button {
+#main-signup {
+  margin-left: auto;
+}
+#main-signup .signup-button {
+  margin: auto;
   text-align: right;
+  padding: 0;
+}
+#main-signup .signup-button li {
+  padding: 10px 0;
 }
 
 .license-box {
@@ -194,7 +215,7 @@ button {
 
 .fx-panel-container {
   background: #fff;
-  border: 1px solid #DEDEDE;
+  border: 1px solid #004385;
 }
 
 .fx-panel {
@@ -286,10 +307,6 @@ button {
   padding: 10px;
 }
 
-.p-title {
-  padding-bottom: 40px;
-}
-
 .fx-feature-box {
   text-align: center;
   margin-top: 30px;
@@ -352,20 +369,38 @@ button {
   margin-bottom: 10px;
 }
 
-#cs_telephone_number {
-  width: 90%;
-}
-
 #phone-result {
-  padding-left: 10px;
   text-align: left;
   margin: 20px 0;
+}
+
+#contacts-emails-container {
+  background: url("../images/world-map.svg");
+  padding: 0;
+}
+#contacts-emails-container .contacts-emails {
+  padding-bottom: 30px;
+  color: #fff;
+}
+#contacts-emails-container .contacts-emails .row {
+  padding: 25px 0 0;
+}
+#contacts-emails-container .contacts-emails .row h6, #contacts-emails-container .contacts-emails .row p {
+  color: #fff;
+}
+#contacts-emails-container .contacts-emails .row.emails {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 25px 0;
 }
 
 .phone-note {
   margin-right: 50px;
   text-align: left;
   padding-right: 40px;
+}
+
+.fx-customer-service {
+  float: left;
 }
 
 .champion-features th {
@@ -570,18 +605,14 @@ fieldset {
 .top-nav-menu a {
   color: #FFF !important;
 }
+.top-nav-menu a li {
+  border-bottom: 3px solid #004385;
+  margin-bottom: -4px;
+}
 
 .logo-parent {
   padding: 0;
   margin: 0;
-}
-
-.binary-logo-text {
-  padding: 0;
-}
-.binary-logo-text div {
-  width: 150px !important;
-  margin-top: 8px;
 }
 
 .test {
@@ -946,6 +977,7 @@ ol ol ol ol li:before {
 body .top-nav-menu li a {
   height: auto;
   padding: 25px 15px;
+  margin-bottom: -4px;
 }
 
 .main-nav > li > ul {
@@ -956,6 +988,10 @@ body .top-nav-menu li a {
   z-index: 10;
 }
 
+.top-nav-menu a.active {
+  border-bottom: 4px solid #DEDEDE;
+}
+
 .top-nav-menu {
   float: right;
 }
@@ -964,17 +1000,13 @@ body .top-nav-menu li a {
   height: 45px;
 }
 
-.binary-logo-text > div {
-  height: 45px;
-}
-
 .logo, .logo-dark {
   height: 45px;
 }
 
-@media screen and (max-width: 796px) {
+@media screen and (max-width: 991px) {
   .top-nav-menu {
-    float: left;
+    float: left !important;
   }
 }
 /* stylelint-disable selector-list-comma-newline-after, selector-list-comma-space-after */
@@ -1327,6 +1359,9 @@ body .top-nav-menu li a {
 .slider-text .container, .slider-text .container .row {
   height: 100%;
 }
+.slider-text .container h3, .slider-text .container p, .slider-text .container .row, .slider-text .container .row h3, .slider-text .container .row p, .slider-text .container .row .row {
+  padding: 10px;
+}
 
 .license-box-icon {
   background: url("../images/symbols/cfx_l.svg") center center no-repeat;
@@ -1337,6 +1372,7 @@ body .top-nav-menu li a {
   height: 100%;
   margin: 0;
   background-position: center center;
+  max-width: 80px;
 }
 
 #slide-1 {

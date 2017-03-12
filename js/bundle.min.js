@@ -18537,6 +18537,7 @@
 	        container.on('champion:after', afterContentChange);
 	        Client.init();
 	        Slider.init();
+
 	        ChampionSocket.init({
 	            authorize: function authorize(response) {
 	                Client.response_authorize(response);
@@ -20004,6 +20005,19 @@
 	        ChampionSocket.wait('authorize').then(function () {
 	            userMenu();
 	        });
+	        $(function () {
+	            var window_path = window.location.pathname;
+	            var path = window_path.replace(/\/$/, '');
+	            var href = decodeURIComponent(path);
+	            $('#top-nav-menu li a').each(function () {
+	                var target = $(this).attr('href');
+	                if (target === href) {
+	                    $(this).addClass('active');
+	                } else {
+	                    $(this).removeClass('active');
+	                }
+	            });
+	        });
 	    };
 
 	    var userMenu = function userMenu() {
@@ -20932,7 +20946,7 @@
 	    }
 	};
 
-	$(document).ready(function () {
+	$(function () {
 	    positionFooterAndDots();
 	    $(window).resize(positionFooterAndDots);
 	});
