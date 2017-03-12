@@ -1354,6 +1354,9 @@ body .top-nav-menu li a {
 .slider-text .container h3, .slider-text .container p, .slider-text .container .row, .slider-text .container .row h3, .slider-text .container .row p, .slider-text .container .row .row {
   padding: 10px;
 }
+.slider-text .slide-list li {
+  height: auto !important;
+}
 
 .license-box-icon {
   background: url("../images/symbols/cfx_l.svg") center center no-repeat;
@@ -1378,6 +1381,41 @@ body .top-nav-menu li a {
 }
 
 #slide-2 {
+  background: url("../images/about-2.jpg") no-repeat center center;
+  background-size: cover;
+  height: 500px;
+  width: 100%;
+}
+
+#slide-3 {
+  background: url("../images/about-2.jpg") no-repeat center center;
+  background-size: cover;
+  height: 500px;
+  width: 100%;
+}
+
+#slide-4 {
+  background: url("../images/about-2.jpg") no-repeat center center;
+  background-size: cover;
+  height: 500px;
+  width: 100%;
+}
+
+#slide-5 {
+  background: url("../images/image1.jpg") no-repeat center center;
+  background-size: cover;
+  height: 500px;
+  width: 100%;
+}
+
+#slide-6 {
+  background: url("../images/about-2.jpg") no-repeat center center;
+  background-size: cover;
+  height: 500px;
+  width: 100%;
+}
+
+#slide-7 {
   background: url("../images/about-2.jpg") no-repeat center center;
   background-size: cover;
   height: 500px;
