@@ -45,6 +45,16 @@ button {
   color: #fff;
 }
 
+h1.main-title {
+  border-bottom: 2px solid #F2F2F2;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+}
+
+.separator.fill-bg-color {
+  margin: 40px 0;
+}
+
 .topbar-container div {
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
@@ -257,7 +267,7 @@ button {
   }
 }
 .fx-section {
-  padding: 50px 0;
+  padding: 20px 0 40px;
 }
 .fx-section .fx-features-title {
   margin-bottom: 50px;
@@ -506,16 +516,16 @@ fieldset {
 }
 
 .form-row {
-  padding: 10px 0;
+  width: 350px;
+  max-width: 100%;
+  margin-bottom: 20px;
 }
-.form-row label {
-  display: block;
-  text-align: right;
+.form-row select, .form-row input, .form-row textarea {
+  width: 100%;
 }
 
-.left-label .form-row label {
-  text-align: left;
-  margin-left: 30px;
+.submit-row {
+  margin: 40px 0;
 }
 
 .hidden {
@@ -1001,6 +1011,11 @@ body .top-nav-menu li a {
     float: left !important;
   }
 }
+@media screen and (min-width: 1200px) {
+  .container {
+    width: 1200px;
+  }
+}
 /* stylelint-disable selector-list-comma-newline-after, selector-list-comma-space-after */
 #int_bank_wire, #local_bank_transfer, #western_union, #citadel, #visa,
 #mastercard, #cuo-credit-card, #moneybrokers, #neteller, #moneta,
@@ -1359,11 +1374,13 @@ body .top-nav-menu li a {
 .slider-text .container h3, .slider-text .container p, .slider-text .container .row, .slider-text .container .row h3, .slider-text .container .row p, .slider-text .container .row .row {
   padding: 10px;
 }
-.slider-text .container ul li, .slider-text .container .row ul li {
-  font-size: 14px;
-}
 .slider-text .slide-list li {
   height: auto !important;
+  font-size: 14px;
+}
+
+.large-slider-text {
+  display: block;
 }
 
 .license-box-icon {
