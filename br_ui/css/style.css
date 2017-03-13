@@ -1381,6 +1381,13 @@ body .top-nav-menu li a {
 
 .large-slider-text {
   display: block;
+  height: 100%;
+}
+.large-slider-text .container, .large-slider-text .container .row {
+  height: 100%;
+}
+.large-slider-text .container h3, .large-slider-text .container p, .large-slider-text .container .row, .large-slider-text .container .row h3, .large-slider-text .container .row p, .large-slider-text .container .row .row {
+  padding: 0;
 }
 
 .license-box-icon {
