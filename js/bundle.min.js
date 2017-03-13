@@ -37674,7 +37674,8 @@
 	                arrows: false,
 	                slidesToShow: 1,
 	                appendDots: $('#slider-dots'),
-	                lazyLoad: 'progressive'
+	                lazyLoad: 'progressive',
+	                autoplay: true
 	            });
 	            positionFooterAndDots();
 	        });
@@ -37697,7 +37698,7 @@
 	                $('#slider-dots').css({
 	                    transform: 'translateY(' + dotsMargin + 'px)'
 	                });
-	                $('.slider-text').css('height', 500 + height + 'px');
+	                $('.slider-text, .large-slider-text').css('height', 500 + height + 'px');
 	            }, 10);
 
 	            /*eslint-enable */
@@ -37709,7 +37710,7 @@
 	                $('#slider-dots').css({
 	                    transform: 'translateY(-40px)'
 	                });
-	                $('.slider-text').css('height', '100%');
+	                $('.slider-text, .large-slider-text').css('height', '100%');
 	            });
 	        }
 	    };
