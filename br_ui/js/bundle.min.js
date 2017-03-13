@@ -20877,7 +20877,7 @@
 	            if (!checkField(field)) {
 	                if (form.is_ok) {
 	                    // first error
-	                    $.scrollTo(field.$, 500, { offset: -10 });
+	                    $.scrollTo(field.$.parent('div'), 500, { offset: -10 });
 	                }
 	                form.is_ok = false;
 	            }
@@ -36175,7 +36175,7 @@
 	            }
 	            ChampionSocket.send(data).then(function (response) {
 	                if (response.error) {
-	                    $('#error-create-account').removeClass('hidden').text(response.error.message);
+	                    $('#msg_form').removeClass('hidden').text(response.error.message);
 	                    btn_submit.removeAttr('disabled');
 	                } else {
 	                    var acc_info = response.new_account_virtual;
@@ -36826,7 +36826,7 @@
 	            }
 
 	            var data = { set_financial_assessment: 1 };
-	            showLoadingImage($('#form_message'));
+	            showLoadingImage($('#msg_form'));
 	            $('#assessment_form').find('select').each(function () {
 	                financial_assessment[$(this).attr('id')] = data[$(this).attr('id')] = $(this).val();
 	            });
@@ -36867,7 +36867,7 @@
 	                }
 	            });
 	        } else {
-	            $('#form_message').html(msg).delay(5000).fadeOut(1000);
+	            $('#msg_form').html(msg).delay(5000).fadeOut(1000);
 	        }
 	    };
 
@@ -37674,8 +37674,7 @@
 	                arrows: false,
 	                slidesToShow: 1,
 	                appendDots: $('#slider-dots'),
-	                lazyLoad: 'progressive',
-	                autoplay: true
+	                lazyLoad: 'progressive'
 	            });
 	            positionFooterAndDots();
 	        });
