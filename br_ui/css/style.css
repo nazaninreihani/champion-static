@@ -121,7 +121,6 @@ h1.main-title {
   padding: 0;
 }
 .signup-box input {
-  padding: 5px 15px;
   margin-right: 5px;
   margin-bottom: 5px;
 }
@@ -386,6 +385,7 @@ h1.main-title {
 
 #contacts-emails-container {
   padding: 0;
+  background: url("../images/c_img.png");
 }
 #contacts-emails-container .contacts-emails {
   padding-bottom: 30px;
@@ -395,7 +395,7 @@ h1.main-title {
   padding: 25px 0 0;
 }
 #contacts-emails-container .contacts-emails .row.emails {
-  padding: 0;
+  padding: 25px 0;
   border-bottom: 1px solid #DEDEDE;
 }
 
