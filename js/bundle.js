@@ -37674,7 +37674,8 @@
 	                arrows: false,
 	                slidesToShow: 1,
 	                appendDots: $('#slider-dots'),
-	                lazyLoad: 'progressive'
+	                lazyLoad: 'progressive',
+	                autoplay: true
 	            });
 	            positionFooterAndDots();
 	        });
