@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
 
-    <title>Endpoint | Champion-FX.com</title>
+    <title>Security | Champion-FX.com</title>
     <meta name="description" content="ChampionFX Static" />
     <link rel="icon" type="image/png" sizes="16x16" href="/champion-static/br_ui/images/favicons/CFX_favicon16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/champion-static/br_ui/images/favicons/CFX_favicon32.png" />
@@ -152,39 +152,46 @@
     <main class="page-content" aria-label="Content" id="champion-container">
         <div class="wrapper" id="champion-content">
             <div class="fx-section">
-    <div class="container">
-        <h1>Change API Endpoint</h1>
-        <form id="frm_endpoint">
-            <fieldset>
-                <legend>Details</legend>
-                <div class="row form-row">
-                    <div class="col-xs-4">
-                        <label for="txt_server_url">Server</label>
-                    </div>
-                    <div class="col-xs-8">
-                        <input type="text" class="form-control" id="txt_server_url" maxlength="30" />
-                        <div class="hint">e.g. ws.binaryws.com</div>
-                        <p class="errorfield" id="error-server_url" style="display:none"></p>
-                    </div>
-                </div>
-                <div class="row form-row">
-                    <div class="col-xs-4">
-                        <label for="txt_app_id">OAuth App ID (Optional)</label>
-                    </div>
-                    <div class="col-xs-8">
-                        <input type="text" class="form-control" id="txt_app_id" maxlength="5" />
-                        <p class="errorfield" id="error-app_id" style="display:none"></p>
-                    </div>
-                </div>
-            </fieldset>
+    <div class="fx-security container">
+        <div class="row">
+            <div class="col-sm">
+                <h1 class="main-title" >Security settings</h1>
 
-            <div class="row">
-                <div class="col-xs-8 offset-md-4">
-                    <button id="btn_set_endpoint" type="submit">Submit</button>
-                    <button class="button-secondary" id="btn_reset_endpoint">Reset to Original Settings</button>
+                <div class="errorbox rbox center-text" id="client_message" style="display:none">
+                    <div class="rbox-wrap">
+                        <div class="gr-12 rbox-content" id="client_message_content">
+                            <p class="center notice-msg"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fx-security-content" style="display: none">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="/champion-static/br_ui/en/user/change-password.html">
+                                <h3>Account password</h3>
+                            </a>
+                            <div class="separator primary-color"></div>
+                            <p>Change your ChampionFX account login password.</p>
+                        </div>
+                        <div class="col-md-3 offset-lg-1 fx-real" style="display: none">
+                            <a href="/champion-static/br_ui/en/cashier/cashier-password.html">
+                                <h3>Cashier password</h3>
+                            </a>
+                            <div class="separator primary-color"></div>
+                            <p>Create or change your cashier password to restrict deposits and withdrawals.</p>
+                        </div>
+                        <div class="col-md-3 offset-lg-1" style="display: none">
+                            <a href="user/security/ip_history">
+                                <h3>Login history</h3>
+                            </a>
+                            <div class="separator primary-color"></div>
+                            <p>View your login history, including date, time, browser, and IP address.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
         </div>
