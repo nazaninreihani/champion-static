@@ -395,8 +395,8 @@ h1.main-title {
   padding: 25px 0 0;
 }
 #contacts-emails-container .contacts-emails .row.emails {
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  padding: 25px 0;
+  padding: 0;
+  border-bottom: 1px solid #DEDEDE;
 }
 
 .phone-note {
